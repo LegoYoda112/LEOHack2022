@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package LEOHack;
+
+// Satalite description
+// Sent during first connect and handshakes with satalite and team code
+// Defines name, team ID, thruster config, mass and inertia
+// !! MAKE SURE YOUR TEAM ID IS SET IN CODE, OTHERWISE SCORES WILL NOT BE COUNTED CORRECTLY !!
+message SataliteDescription {
+    // ID properties
+    // !! TO BE SET BY TEAM !!
+    string teamName = 1;
+    uint32 teamID = 2;
+
+    // Physical properties
+    // will come pre-filled
+    float mass = 3;
+    float inertia = 4;
+    float initialFuel = 5;
+
+    // Connection properties
+    // will be pre-filled 
+    string ipAddress = 6;
+}
+
+// =============== STATE MESSAGES ===============
+
+// Location + orientation
+// Used for:
+// - Absolute pose of team satalite to base station
+// - Absolute pose of dead satalite to base station
+// - Relative pose of team satalite to dead satalite
+message Pose2D {
+    float x = 1; // in meters
+    float y = 2; // in meters
+    float theta = 3; // in rads
+}
+
+// Satalite state
+// Contains feedback about current
+message SataliteState {
+    uint32 teamID = 1;
+    bool active = 2;
+
+    // Satalite location
+    Pose2D location = 3;
+
+    // Remaining fuel
+    float fuel = 4;
+}
+
+// =============== SATTALITE COMMANDS ===============
+
+// For sending override commands to the satalite
+// TODO: How much of this do we put on the team GUI
+message Command {
+    enum CmdType {
+        INIT = 0; // Inits the team code
+        START = 1; // Starts the team code
+        PAUSE = 2; // Pauses team update loop
+        ABORT = 3; // Stops team code and kills motors
+        RESET = 4; // Resets all team specific paremeters
+        REBOOT = 5; // Reboots pi? not sure how drastic I need this
+    }
+
+    CmdType commandType = 1;
+}
+
+// Reply if command was sucessfully executed
+message CommandReply {
+    bool success = 1;
+}
