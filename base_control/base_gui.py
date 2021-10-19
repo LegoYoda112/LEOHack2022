@@ -56,6 +56,11 @@ class BaseFrame(wx.Frame):
         # main_sizer.Add(row_sizer, 1, wx.EXPAND)
         panel.SetSizer(main_sizer)
 
+    def heartbeat_status(self, status):
+        print(status)
+
+        if status == False:
+            self.connection_status.SetLabel("DISCONNECTED!")
 
     # Open a connection to the satellite
     def connect(self, event):
@@ -75,7 +80,7 @@ class BaseFrame(wx.Frame):
         else:
             self.connection_status.SetLabel("Connected to sat with ID: " + sat_name + "!")
 
-
+        ctl.start_heartbeat(self.heartbeat_status)
 
 if __name__ == "__main__":
     app = wx.App()
