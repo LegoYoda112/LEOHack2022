@@ -8,6 +8,8 @@ numpy = "*"
 zmq = "*"
 wxpython = "*"
 netifaces = "*"
+pyserial = "*"
+pygame = "*"
 
 [dev-packages]
 
