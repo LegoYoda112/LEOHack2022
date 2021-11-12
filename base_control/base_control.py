@@ -29,7 +29,7 @@ class BaseControl:
     def connect_sat(self, ip, port, timeout = 1):
         # Connect to socket and send hello message
         self.connect_socket(ip, port)
-        self.send_msg("hello!")
+        self.send_msg("INIT greetings")
 
         # Start a poller to create a recv with a timeout
         poller = zmq.Poller()
@@ -50,7 +50,8 @@ class BaseControl:
         else:
             print("Sucsessful connection")
 
-            sat_name = events[0][0].recv().decode("utf-8")
+            recv_string = events[0][0].recv().decode("utf-8")
+            sat_name = recv_string.split(" ")[1]
 
             self.sat = SatConnection(sat_name, ip, port)
             print(self.sat)
@@ -59,7 +60,7 @@ class BaseControl:
 
     def ping(self, timeout):
         # Send message
-        self.send_msg("ping")
+        self.send_msg("HB ping")
 
         # Register a poller to send with a timeout
         poller = zmq.Poller()
@@ -78,6 +79,7 @@ class BaseControl:
             print(reply)
             return True
 
+    # Heartbeat to check if 
     def heartbeat(self, callback):
         # Loop that pings the sat every second
         while(True):
@@ -93,3 +95,7 @@ class BaseControl:
         # Create the heartbeat threat and start it
         self.heartbeat_thread = threading.Thread(target = self.heartbeat, args=(callback,))
         self.heartbeat_thread.start()
+
+    def send_drive(self):
+        self.send_msg("DRIVE 10 10 10")
+        print(self.send_socket.recv())
