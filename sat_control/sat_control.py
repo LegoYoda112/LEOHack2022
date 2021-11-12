@@ -2,10 +2,12 @@ import zmq
 import threading
 import time
 
+import serial
+
 global alive
 
 class SatControl:
-    def __init__(self, name):
+    def __init__(self, name, serial_name):
         # Init ZMQ socket
         self.sock = zmq.Context().socket(zmq.REP)
         self.sock.bind("tcp://0.0.0.0:9000")
@@ -13,6 +15,9 @@ class SatControl:
         self.name = name
 
         self.alive = True
+
+        self.ser = serial.Serial(serial_name, 115200, write_timeout = 0.1)
+        print(self.ser.name)
 
     def start(self):
 
@@ -81,6 +86,15 @@ class SatControl:
         print(message)
 
         return "ACK " + str(self.name)
+
+    def writeTwist(x, y, theta):
+        sendString = "%.2f %.2f %.2f\n" % (x, y, theta)
+        print(sendString)
+
+        try:
+            self.ser.write(bytes(sendString, "utf-8"))
+        except WriteTimeoutError:
+            print("write failed")
 
     def reset(self):
         pass
