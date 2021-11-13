@@ -16,7 +16,7 @@ class SatControl:
 
         self.alive = True
 
-        self.ser = serial.Serial(serial_name, 115200, write_timeout = 0.1)
+        self.ser = serial.Serial(serial_name, 115200, write_timeout = 0.001)
         print(self.ser.name)
 
     def start(self):
@@ -84,17 +84,21 @@ class SatControl:
     def receive_DRIVE(self, message):
         print("Received DRIVE: ")
         print(message)
+        self.writeTwist(float(message[0]), float(message[1]), float(message[2]))
 
-        return "ACK " + str(self.name)
+        return "a"
 
-    def writeTwist(x, y, theta):
+    def writeTwist(self, x, y, theta):
         sendString = "%.2f %.2f %.2f\n" % (x, y, theta)
-        print(sendString)
+#        print(sendString)
 
         try:
+            self.ser.flushInput()
+            self.ser.flushOutput()
             self.ser.write(bytes(sendString, "utf-8"))
-        except WriteTimeoutError:
-            print("write failed")
+        except Exception as e:
+            print(e)
+#             print("write failed")
 
     def reset(self):
-        pass
+        self.writeTwist(0, 0, 0)
