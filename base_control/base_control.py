@@ -18,6 +18,10 @@ class BaseControl:
 
         self.context = zmq.Context()
 
+        # Make a thread lock to prevent multiple threads from
+        # accessing the socket at the same time
+        self.comms_lock = threading.Lock()
+
     def connect_socket(self, ip, port):
         self.send_socket = self.context.socket(zmq.REQ)
         self.send_socket.setsockopt(zmq.LINGER, 0)
@@ -59,6 +63,9 @@ class BaseControl:
             return (True, sat_name)
 
     def ping(self, timeout):
+        self.comms_lock.acquire()
+        print(" ==== Ping lock")
+
         # Send message
         self.send_msg("HB ping")
 
@@ -67,6 +74,9 @@ class BaseControl:
         poller.register(self.send_socket, zmq.POLLIN)
 
         events = poller.poll(timeout * 1000)
+
+        print(" ==== Ping unlock")
+        self.comms_lock.release()
 
         # Debug, 
         print(len(events))
@@ -96,6 +106,19 @@ class BaseControl:
         self.heartbeat_thread = threading.Thread(target = self.heartbeat, args=(callback,))
         self.heartbeat_thread.start()
 
-    def send_drive(self):
-        self.send_msg("DRIVE 10 10 10")
+    def send_drive(self, drivevals):
+        self.comms_lock.acquire()
+        print(" ==== Drive lock")
+
+        t0 = time.time()
+        self.send_msg("DRIVE " + str(drivevals[0]) + " "
+                            + str(drivevals[1]) + " "
+                            + str(drivevals[2]))
         print(self.send_socket.recv())
+
+        t1 = time.time()
+
+        print(round((t1 - t0) * 1000), "ms")
+
+        print(" ==== Drive unlock")
+        self.comms_lock.release()
