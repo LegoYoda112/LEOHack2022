@@ -3,7 +3,8 @@ from base_control import BaseControl
 ctl = BaseControl("Remote")
 
 # Connect to satalite
-ctl.connect_sat("192.168.51.11", 9000)
+# ctl.connect_sat("192.168.51.11", 9000)
+ctl.connect_sat("localhost", 9000)
 
 # Status callback
 def callback(status):
@@ -62,9 +63,15 @@ def main():
         print(axis0, axis1, axis2, axis3)
 
         # Send axis values to satalite
-        ctl.send_drive((round(-axis2 * 60, 2),
-                        round(axis1 * 60, 2),
-                        round(-axis0 / 0.5, 2)))
+        # ctl.send_drive((round(-axis2 * 60, 2),
+        #                 round(axis1 * 60, 2),
+        #                 round(-axis0 / 0.5, 2)))
+
+        ctl.send_drive((round(-axis0 * 60, 2),
+                         round(axis1 * 60, 2),
+                         round(-axis1 / 0.5, 2)))
+
+
         surface.fill((0,0,0))
 
         pygame.display.flip()

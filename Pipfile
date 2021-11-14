@@ -10,6 +10,9 @@ wxpython = "*"
 netifaces = "*"
 pyserial = "*"
 pygame = "*"
+coloredlogs = "*"
+colorama = "*"
+meshcat = "*"
 
 [dev-packages]
 

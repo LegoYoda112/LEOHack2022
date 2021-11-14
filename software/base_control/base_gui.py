@@ -95,7 +95,7 @@ class BaseFrame(wx.Frame):
     # Perform a basic manual control test
     def manual_control(self, event):
         print("Manual control test")
-        ctl.send_drive()
+        ctl.send_drive((0, 0, 0))
 
 if __name__ == "__main__":
     app = wx.App()
