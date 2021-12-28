@@ -46,7 +46,10 @@ logger.info("Starting meshcat")
 vis = meshcat.Visualizer()
 vis.open()
 
-vis["robot"].set_object(g.Sphere(1), g.MeshLambertMaterial(color = 0xF33B12, reflectivity=0.9, opacity=1))
+# vis["robot"].set_object(g.Sphere(1), g.MeshLambertMaterial(color = 0xF33B12, reflectivity=0.9, opacity=1))
+vis["robot2"].set_object(g.ObjMeshGeometry.from_file("3d_assets/Base.obj"), g.MeshPhongMaterial(color = 0xDD6442, transparent = False, opacity=1))
+vis["robot"].set_object(g.ObjMeshGeometry.from_file("3d_assets/Base.obj"), g.MeshPhongMaterial(color = 0x73BE63, transparent = False, opacity=1))
+
 
 sat_x = 0
 sat_dx = 0
@@ -84,8 +87,8 @@ def drive(x, y, theta):
 
     logger.debug(f"{x}, {y}, {theta}")
 
-    sat_dx = x
-    sat_dy = y
+    sat_dx = x / 30.0
+    sat_dy = y / 30.0
 
 sat.register_drive_callback(drive)
 

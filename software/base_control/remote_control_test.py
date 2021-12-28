@@ -54,10 +54,10 @@ def main():
                 running = False
             elif event.type == pygame.JOYAXISMOTION:
                 #print("reading axis")
-                axis0 = deadzone(joysticks[0].get_axis(0), 0.15)
-                axis1 = deadzone(joysticks[0].get_axis(1), 0.15)
-                axis2 = deadzone(joysticks[0].get_axis(2), 0.15)
-                axis3 = deadzone(joysticks[0].get_axis(3), 0.15)
+                axis0 = deadzone(joysticks[0].get_axis(0), 0.05)
+                axis1 = deadzone(joysticks[0].get_axis(1), 0.05)
+                axis2 = deadzone(joysticks[0].get_axis(2), 0.05)
+                axis3 = deadzone(joysticks[0].get_axis(3), 0.05)
         
         # Print out axis
         print(axis0, axis1, axis2, axis3)

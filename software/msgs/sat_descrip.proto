@@ -1,30 +1,13 @@
+// Protobuf V3 description file
+// Compile using: protoc --python_out=./ ./sat_descrip.proto
+
 syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
 
 package LEOHack;
 
-// Satalite description
-// Sent during first connect and handshakes with satalite and team code
-// Defines name, team ID, thruster config, mass and inertia
-// !! MAKE SURE YOUR TEAM ID IS SET IN CODE, OTHERWISE SCORES WILL NOT BE COUNTED CORRECTLY !!
-message SataliteDescription {
-    // ID properties
-    // !! TO BE SET BY TEAM !!
-    string teamName = 1;
-    uint32 teamID = 2;
-
-    // Physical properties
-    // will come pre-filled
-    float mass = 3;
-    float inertia = 4;
-    float initialFuel = 5;
-
-    // Connection properties
-    // will be pre-filled 
-    string ipAddress = 6;
-}
-
-// =============== STATE MESSAGES ===============
-
+// =============== INFO MESSAGES ===============
 // Location + orientation
 // Used for:
 // - Absolute pose of team satalite to base station
@@ -36,6 +19,48 @@ message Pose2D {
     float theta = 3; // in rads
 }
 
+// 2D Twist, translatonal + rotational velocity
+message Twist2D {
+    float v_x = 1; // in m/s
+    float v_y = 2; // in m/s
+    float omega = 3; // in rad/s
+}
+
+// 2D Wrench, force + torque
+message Wrench2D {
+    float f_x = 1; // in N
+    float f_y = 2; // in N
+    float tau = 3; // in Nm
+}
+
+// Team info
+// Team name can be whatever a team decides
+// Team ID must be the unique ID provided by the competition
+message TeamInfo {
+    string teamName = 1;
+    uint32 teamID = 2;
+}
+
+// Satalite description
+// Sent during first connect and handshakes with satalite and team code
+// Defines name, team ID, thruster config, mass and inertia
+// !! MAKE SURE YOUR TEAM ID IS SET IN CODE, OTHERWISE SCORES WILL NOT BE COUNTED CORRECTLY !!
+message SataliteDescription {
+    // ID properties
+    // !! TO BE SET BY TEAM !!
+    TeamInfo teaminfo = 1;
+
+    // Physical properties
+    // will come pre-filled
+    float mass = 2;
+    float inertia = 3;
+
+    // Connection properties
+    // will be pre-filled 
+    string ipAddress = 5;
+}
+
+// =============== STATE MESSAGES ===============
 // Satalite state
 // Contains feedback about current
 message SataliteState {
@@ -43,10 +68,25 @@ message SataliteState {
     bool active = 2;
 
     // Satalite location
-    Pose2D location = 3;
+    Pose2D pose = 3;
 
-    // Remaining fuel
+    // Used fuel
     float fuel = 4;
+}
+
+message SystemState {
+    enum State {
+        INIT = 0;
+        RUN = 1;
+        RESET = 2;
+        ABORT = 3;
+    }
+
+    State state = 1;
+
+    // https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/timestamp
+    google.protobuf.Timestamp elapsedTime = 2;
+    google.protobuf.Timestamp absoluteTime = 3;
 }
 
 // =============== SATTALITE COMMANDS ===============
@@ -64,6 +104,11 @@ message Command {
     }
 
     CmdType commandType = 1;
+}
+
+// Thrust command
+message ThrustCommand {
+    Wrench2D thrust = 1;
 }
 
 // Reply if command was sucessfully executed
