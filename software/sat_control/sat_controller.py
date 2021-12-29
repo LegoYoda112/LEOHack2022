@@ -35,22 +35,17 @@ class SatControllerInterface(ABC):
 
     # Abstract run method, the team will implement this
     @abstractmethod
-    def run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState) -> sat_msgs.ThrustCommand:
+    def team_run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState) -> sat_msgs.ThrustCommand:
         raise NotImplementedError
 
     # Abstract init method, the team will implement this
     @abstractmethod
-    def init(self) -> sat_msgs.TeamInfo:
+    def team_init(self) -> sat_msgs.TeamInfo:
         raise NotImplementedError
     
     # Abstract reset method, the team will implement this
     @abstractmethod
-    def reset(self) -> None:
-        pass
-
-    # Abstract abort method, the team will implement this
-    @abstractmethod
-    def abort(self) -> None:
+    def team_reset(self) -> None:
         pass
     
     # Method to handle system state
@@ -61,30 +56,34 @@ class SatControllerInterface(ABC):
         # Basic state machine
         # Any state transition is allowed
         # =================== INIT STATE ===================
-        if state == sat_msgs.SystemState.STATE_INIT:
+        if state == sat_msgs.SystemState.INIT:
 
             # Run team init and copy over team info
             team_info = self.init()
-            self.description.team_info.CopyFrom(team_info)
+            self.sat_description.teamInfo.CopyFrom(team_info)
+
+            self.logger.info(f'Sat controller initialized ' +
+                            f'for team {team_info.teamName} ' +
+                            f'with team ID {team_info.teamID} ')
 
             return
 
         # =================== RUN STATE ===================
-        elif state == sat_msgs.SystemState.STATE_RUN:
+        elif state == sat_msgs.SystemState.RUN:
 
             # Run team controller and return resulting thrust command
             thrust_command = self.run(system_state, satellite_state)
             return thrust_command
 
         # =================== ABORT STATE ===================
-        elif state == sat_msgs.SystemState.STATE_ABORT:
+        elif state == sat_msgs.SystemState.ABORT:
 
             # Run team abort code
             self.abort()
             return
 
         # =================== RESET STATE ===================
-        elif state == sat_msgs.SystemState.STATE_RESET:
+        elif state == sat_msgs.SystemState.RESET:
 
             # Run team reset code
             self.reset()

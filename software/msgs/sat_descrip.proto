@@ -48,7 +48,7 @@ message TeamInfo {
 message SatelliteDescription {
     // ID properties
     // !! TO BE SET BY TEAM !!
-    TeamInfo teaminfo = 1;
+    TeamInfo teamInfo = 1;
 
     // Physical properties
     // will come pre-filled

@@ -20,7 +20,7 @@ class TeamController(SatControllerInterface):
 
         # Update team info
         team_info = sat_msgs.TeamInfo()
-        team_info.teamName = "Example team"
+        team_info.teamName = "Example"
         team_info.teamID = 1111
 
         # Return team info
