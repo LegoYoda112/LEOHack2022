@@ -33,6 +33,7 @@ class SatControllerInterface(ABC):
                 hasattr(subclass, 'init') and
                 callable(subclass.init))
 
+    # ====================== ABSTRACT TEAM FUNCTIONS
     # Abstract run method, the team will implement this
     @abstractmethod
     def team_run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState) -> sat_msgs.ThrustCommand:
@@ -47,51 +48,27 @@ class SatControllerInterface(ABC):
     @abstractmethod
     def team_reset(self) -> None:
         pass
-    
-    # Method to handle system state
-    # Runs a basic state machine
-    def handleState(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState):
-        state = system_state.state
+
+    # ====================== CONTROLLER FUNCTIONS
+    def init(self) -> sat_msgs.TeamInfo:
+
+        team_info = self.team_init()
         
-        # Basic state machine
-        # Any state transition is allowed
-        # =================== INIT STATE ===================
-        if state == sat_msgs.SystemState.INIT:
+        self.sat_description.teamInfo.CopyFrom(team_info)
 
-            # Run team init and copy over team info
-            team_info = self.init()
-            self.sat_description.teamInfo.CopyFrom(team_info)
+        self.logger.info(f'Sat controller initialized ' +
+                        f'for team {team_info.teamName} ' +
+                        f'with team ID {team_info.teamID} ')
 
-            self.logger.info(f'Sat controller initialized ' +
-                            f'for team {team_info.teamName} ' +
-                            f'with team ID {team_info.teamID} ')
+        return team_info
 
-            return
+    def run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState) -> sat_msgs.ThrustCommand:
+        return self.team_run(system_state, satellite_state)
 
-        # =================== RUN STATE ===================
-        elif state == sat_msgs.SystemState.RUN:
+    def reset(self):
+        self.team_reset()
 
-            # Run team controller and return resulting thrust command
-            thrust_command = self.run(system_state, satellite_state)
-            return thrust_command
-
-        # =================== ABORT STATE ===================
-        elif state == sat_msgs.SystemState.ABORT:
-
-            # Run team abort code
-            self.abort()
-            return
-
-        # =================== RESET STATE ===================
-        elif state == sat_msgs.SystemState.RESET:
-
-            # Run team reset code
-            self.reset()
-            return
-        
-        return None
-
-    # Getters and setters
+    # ====================== GETTERS AND SETTERS
     def set_mass(self, mass):
         self.sat_description.mass = mass
     

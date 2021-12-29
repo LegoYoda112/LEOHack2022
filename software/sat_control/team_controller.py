@@ -7,7 +7,7 @@ from sat_controller import SatControllerInterface, sat_msgs
 
 class TeamController(SatControllerInterface):
 
-    def init(self):
+    def team_init(self):
         # Run any initialization you need
 
         # Example of persistant data
@@ -26,7 +26,7 @@ class TeamController(SatControllerInterface):
         # Return team info
         return team_info
 
-    def run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState) -> sat_msgs.ThrustCommand:
+    def team_run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState) -> sat_msgs.ThrustCommand:
         
         # Example of persistant data
         self.counter += 1
@@ -43,10 +43,6 @@ class TeamController(SatControllerInterface):
         thrust_cmd.thrust.tau = 0.0
         return thrust_cmd
 
-    def abort(self) -> None:
-        # Run any abort code
-        pass
-
-    def reset(self) -> None:
+    def team_reset(self) -> None:
         # Run any reset code
         pass

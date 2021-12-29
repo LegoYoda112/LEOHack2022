@@ -13,6 +13,7 @@ pygame = "*"
 coloredlogs = "*"
 colorama = "*"
 meshcat = "*"
+protobuf = "*"
 
 [dev-packages]
 
