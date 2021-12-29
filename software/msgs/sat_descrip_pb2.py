@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 from google.protobuf import timestamp_pb2 as google_dot_protobuf_dot_timestamp__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11sat_descrip.proto\x12\x07LEOHack\x1a\x1fgoogle/protobuf/timestamp.proto\"-\n\x06Pose2D\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\r\n\x05theta\x18\x03 \x01(\x02\"2\n\x07Twist2D\x12\x0b\n\x03v_x\x18\x01 \x01(\x02\x12\x0b\n\x03v_y\x18\x02 \x01(\x02\x12\r\n\x05omega\x18\x03 \x01(\x02\"1\n\x08Wrench2D\x12\x0b\n\x03\x66_x\x18\x01 \x01(\x02\x12\x0b\n\x03\x66_y\x18\x02 \x01(\x02\x12\x0b\n\x03tau\x18\x03 \x01(\x02\",\n\x08TeamInfo\x12\x10\n\x08teamName\x18\x01 \x01(\t\x12\x0e\n\x06teamID\x18\x02 \x01(\r\"l\n\x13SataliteDescription\x12#\n\x08teaminfo\x18\x01 \x01(\x0b\x32\x11.LEOHack.TeamInfo\x12\x0c\n\x04mass\x18\x02 \x01(\x02\x12\x0f\n\x07inertia\x18\x03 \x01(\x02\x12\x11\n\tipAddress\x18\x05 \x01(\t\"\\\n\rSataliteState\x12\x0e\n\x06teamID\x18\x01 \x01(\r\x12\x0e\n\x06\x61\x63tive\x18\x02 \x01(\x08\x12\x1d\n\x04pose\x18\x03 \x01(\x0b\x32\x0f.LEOHack.Pose2D\x12\x0c\n\x04\x66uel\x18\x04 \x01(\x02\"\xcd\x01\n\x0bSystemState\x12)\n\x05state\x18\x01 \x01(\x0e\x32\x1a.LEOHack.SystemState.State\x12/\n\x0b\x65lapsedTime\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x30\n\x0c\x61\x62soluteTime\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"0\n\x05State\x12\x08\n\x04INIT\x10\x00\x12\x07\n\x03RUN\x10\x01\x12\t\n\x05RESET\x10\x02\x12\t\n\x05\x41\x42ORT\x10\x03\"\x85\x01\n\x07\x43ommand\x12-\n\x0b\x63ommandType\x18\x01 \x01(\x0e\x32\x18.LEOHack.Command.CmdType\"K\n\x07\x43mdType\x12\x08\n\x04INIT\x10\x00\x12\t\n\x05START\x10\x01\x12\t\n\x05PAUSE\x10\x02\x12\t\n\x05\x41\x42ORT\x10\x03\x12\t\n\x05RESET\x10\x04\x12\n\n\x06REBOOT\x10\x05\"2\n\rThrustCommand\x12!\n\x06thrust\x18\x01 \x01(\x0b\x32\x11.LEOHack.Wrench2D\"\x1f\n\x0c\x43ommandReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11sat_descrip.proto\x12\x07LEOHack\x1a\x1fgoogle/protobuf/timestamp.proto\"-\n\x06Pose2D\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\r\n\x05theta\x18\x03 \x01(\x02\"2\n\x07Twist2D\x12\x0b\n\x03v_x\x18\x01 \x01(\x02\x12\x0b\n\x03v_y\x18\x02 \x01(\x02\x12\r\n\x05omega\x18\x03 \x01(\x02\"1\n\x08Wrench2D\x12\x0b\n\x03\x66_x\x18\x01 \x01(\x02\x12\x0b\n\x03\x66_y\x18\x02 \x01(\x02\x12\x0b\n\x03tau\x18\x03 \x01(\x02\",\n\x08TeamInfo\x12\x10\n\x08teamName\x18\x01 \x01(\t\x12\x0e\n\x06teamID\x18\x02 \x01(\r\"m\n\x14SatelliteDescription\x12#\n\x08teaminfo\x18\x01 \x01(\x0b\x32\x11.LEOHack.TeamInfo\x12\x0c\n\x04mass\x18\x02 \x01(\x02\x12\x0f\n\x07inertia\x18\x03 \x01(\x02\x12\x11\n\tipAddress\x18\x05 \x01(\t\"\\\n\rSataliteState\x12\x0e\n\x06teamID\x18\x01 \x01(\r\x12\x0e\n\x06\x61\x63tive\x18\x02 \x01(\x08\x12\x1d\n\x04pose\x18\x03 \x01(\x0b\x32\x0f.LEOHack.Pose2D\x12\x0c\n\x04\x66uel\x18\x04 \x01(\x02\"\xcd\x01\n\x0bSystemState\x12)\n\x05state\x18\x01 \x01(\x0e\x32\x1a.LEOHack.SystemState.State\x12/\n\x0b\x65lapsedTime\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x30\n\x0c\x61\x62soluteTime\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\"0\n\x05State\x12\x08\n\x04INIT\x10\x00\x12\x07\n\x03RUN\x10\x01\x12\t\n\x05RESET\x10\x02\x12\t\n\x05\x41\x42ORT\x10\x03\"\x85\x01\n\x07\x43ommand\x12-\n\x0b\x63ommandType\x18\x01 \x01(\x0e\x32\x18.LEOHack.Command.CmdType\"K\n\x07\x43mdType\x12\x08\n\x04INIT\x10\x00\x12\t\n\x05START\x10\x01\x12\t\n\x05PAUSE\x10\x02\x12\t\n\x05\x41\x42ORT\x10\x03\x12\t\n\x05RESET\x10\x04\x12\n\n\x06REBOOT\x10\x05\"2\n\rThrustCommand\x12!\n\x06thrust\x18\x01 \x01(\x0b\x32\x11.LEOHack.Wrench2D\"\x1f\n\x0c\x43ommandReply\x12\x0f\n\x07success\x18\x01 \x01(\x08\x62\x06proto3')
 
 
 
@@ -23,7 +23,7 @@ _POSE2D = DESCRIPTOR.message_types_by_name['Pose2D']
 _TWIST2D = DESCRIPTOR.message_types_by_name['Twist2D']
 _WRENCH2D = DESCRIPTOR.message_types_by_name['Wrench2D']
 _TEAMINFO = DESCRIPTOR.message_types_by_name['TeamInfo']
-_SATALITEDESCRIPTION = DESCRIPTOR.message_types_by_name['SataliteDescription']
+_SATELLITEDESCRIPTION = DESCRIPTOR.message_types_by_name['SatelliteDescription']
 _SATALITESTATE = DESCRIPTOR.message_types_by_name['SataliteState']
 _SYSTEMSTATE = DESCRIPTOR.message_types_by_name['SystemState']
 _COMMAND = DESCRIPTOR.message_types_by_name['Command']
@@ -59,12 +59,12 @@ TeamInfo = _reflection.GeneratedProtocolMessageType('TeamInfo', (_message.Messag
   })
 _sym_db.RegisterMessage(TeamInfo)
 
-SataliteDescription = _reflection.GeneratedProtocolMessageType('SataliteDescription', (_message.Message,), {
-  'DESCRIPTOR' : _SATALITEDESCRIPTION,
+SatelliteDescription = _reflection.GeneratedProtocolMessageType('SatelliteDescription', (_message.Message,), {
+  'DESCRIPTOR' : _SATELLITEDESCRIPTION,
   '__module__' : 'sat_descrip_pb2'
-  # @@protoc_insertion_point(class_scope:LEOHack.SataliteDescription)
+  # @@protoc_insertion_point(class_scope:LEOHack.SatelliteDescription)
   })
-_sym_db.RegisterMessage(SataliteDescription)
+_sym_db.RegisterMessage(SatelliteDescription)
 
 SataliteState = _reflection.GeneratedProtocolMessageType('SataliteState', (_message.Message,), {
   'DESCRIPTOR' : _SATALITESTATE,
@@ -112,20 +112,20 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _WRENCH2D._serialized_end=211
   _TEAMINFO._serialized_start=213
   _TEAMINFO._serialized_end=257
-  _SATALITEDESCRIPTION._serialized_start=259
-  _SATALITEDESCRIPTION._serialized_end=367
-  _SATALITESTATE._serialized_start=369
-  _SATALITESTATE._serialized_end=461
-  _SYSTEMSTATE._serialized_start=464
-  _SYSTEMSTATE._serialized_end=669
-  _SYSTEMSTATE_STATE._serialized_start=621
-  _SYSTEMSTATE_STATE._serialized_end=669
-  _COMMAND._serialized_start=672
-  _COMMAND._serialized_end=805
-  _COMMAND_CMDTYPE._serialized_start=730
-  _COMMAND_CMDTYPE._serialized_end=805
-  _THRUSTCOMMAND._serialized_start=807
-  _THRUSTCOMMAND._serialized_end=857
-  _COMMANDREPLY._serialized_start=859
-  _COMMANDREPLY._serialized_end=890
+  _SATELLITEDESCRIPTION._serialized_start=259
+  _SATELLITEDESCRIPTION._serialized_end=368
+  _SATALITESTATE._serialized_start=370
+  _SATALITESTATE._serialized_end=462
+  _SYSTEMSTATE._serialized_start=465
+  _SYSTEMSTATE._serialized_end=670
+  _SYSTEMSTATE_STATE._serialized_start=622
+  _SYSTEMSTATE_STATE._serialized_end=670
+  _COMMAND._serialized_start=673
+  _COMMAND._serialized_end=806
+  _COMMAND_CMDTYPE._serialized_start=731
+  _COMMAND_CMDTYPE._serialized_end=806
+  _THRUSTCOMMAND._serialized_start=808
+  _THRUSTCOMMAND._serialized_end=858
+  _COMMANDREPLY._serialized_start=860
+  _COMMANDREPLY._serialized_end=891
 # @@protoc_insertion_point(module_scope)

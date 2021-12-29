@@ -45,7 +45,7 @@ message TeamInfo {
 // Sent during first connect and handshakes with satalite and team code
 // Defines name, team ID, thruster config, mass and inertia
 // !! MAKE SURE YOUR TEAM ID IS SET IN CODE, OTHERWISE SCORES WILL NOT BE COUNTED CORRECTLY !!
-message SataliteDescription {
+message SatelliteDescription {
     // ID properties
     // !! TO BE SET BY TEAM !!
     TeamInfo teaminfo = 1;
