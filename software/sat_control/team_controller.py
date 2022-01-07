@@ -43,6 +43,11 @@ class TeamController(SatControllerInterface):
         thrust_cmd.thrust.tau = 0.0
         return thrust_cmd
 
+    def test_function(self):
+        # Example of logging
+        self.logger.info("Ayy lmao")
+        pass
+
     def team_reset(self) -> None:
         # Run any reset code
         pass

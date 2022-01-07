@@ -19,6 +19,14 @@ import meshcat.geometry as g
 import meshcat.transformations as tf
 
 import threading
+import time
+
+from enum import Enum
+
+class SimState(Enum):
+    STOPPED = 0
+    RUNNING = 1
+    PAUSED = 2
 
 class Sim():
     
@@ -35,8 +43,20 @@ class Sim():
 
         # Sat controller
         self.sat_controller = None
-        self.loadTeamController()
+        self.load_team_controller()
 
+        # Sim thread
+        # TODO: Make not a daemon thread?
+        self.sim_thread = None
+        self.sim_thread_lock = threading.Lock()
+
+        # Sim state enum
+        self.sim_state = SimState.STOPPED
+
+        # Boolean to break thread if stop is called
+        self.kill_thread = False
+
+        self.test_num = 0.0
 
     def start_meshcat(self):
         # Open meshcat window
@@ -45,19 +65,133 @@ class Sim():
 
         # Add satellites
         self.vis["dead_sat"].set_object(g.ObjMeshGeometry.from_file("3d_assets/Base.obj"), g.MeshPhongMaterial(color = 0xDD6442, transparent = False, opacity=1))
+        self.logger.debug("Added dead sat")
         self.vis["team_sat"].set_object(g.ObjMeshGeometry.from_file("3d_assets/Base.obj"), g.MeshPhongMaterial(color = 0x73BE63, transparent = False, opacity=1))
+        self.logger.debug("Added team sat")
 
-        self.logger.debug("Meshcat started")
+        self.logger.info("Meshcat started")
 
-    def loadTeamController(self):
+    def load_team_controller(self):
         # Reload team controller module
         importlib.reload(team_controller)
         self.sat_controller = team_controller.TeamController()
 
         self.logger.debug("Reloaded team controller")
 
+    def sim_thread_function(self):
+        self.logger.info("Starting sim thread")
+
+        while True:
+            # Acquire thread lock
+            self.sim_thread_lock.acquire()
+
+            if self.kill_thread:
+                self.logger.debug("Sim thread killed")
+                break
+
+            # SIM MATH
+            self.test_num += 0.01
+
+            # Run test function
+            self.sat_controller.test_function()
+
+            # Update visualizer
+            self.vis["dead_sat"].set_transform(tf.translation_matrix([self.test_num, 0, 0]))
+
+            self.logger.debug("Running thread")
+            
+            # Release thread lock
+            self.sim_thread_lock.release()
+
+            # Wait amount of time
+            time.sleep(0.03)
+
+        self.logger.info("Simulation ended")
+
     def start(self):
         self.logger.info("Starting simulation")
 
+        # Reset all simulation constants
+        self.reset()
+
+        # Create and start a new sim thread
+        self.sim_thread = threading.Thread(target=self.sim_thread_function, daemon=True)
+        self.sim_thread.start()
+
+        # Set state to running
+        self.sim_state = SimState.RUNNING
+
+    def pause(self):
+        self.logger.info("Pausing simulation")
+
+        # If sim is running, pause it
+        if self.sim_state == SimState.RUNNING:
+            # Acquire thread lock
+            self.sim_thread_lock.acquire()
+
+            # Set state to paused
+            self.sim_state = SimState.PAUSED
+
+        # Warn if thread is already paused
+        elif self.sim_state == SimState.PAUSED:
+            self.logger.warn("Simulation already paused")
+
+        # Warn if thread is not running
+        elif self.sim_state == SimState.STOPPED:
+            self.logger.warn("Simulation is not running")
+
+    def play(self):
+        self.logger.info("Playing simulation")
+
+        # If sim is paused, play it
+        if self.sim_state == SimState.PAUSED:
+
+            # Release thread lock
+            self.sim_thread_lock.release()
+
+            # Set state to paused
+            self.sim_state = SimState.RUNNING
+        
+        # Warn if thread is not paused
+        elif self.sim_state == SimState.RUNNING:
+            self.logger.warn("Simulation is already playing")
+        
+        # Warn if thread is not running
+        elif self.sim_state == SimState.STOPPED:
+            self.logger.warn("Simulation is has been stopped")
+
+    def reset(self):
+        self.pause()
+        self.logger.info("Resetting simulation")
+
+        # Reset simulation
+        self.test_num = 0.0
+
+    def reload(self):
+        self.logger.info("Reloading controller")
+
+        # Reload team controller
+        self.load_team_controller()
+        self.reset()
+
     def end(self):
         self.logger.info("Ending simulation")
+
+        if self.sim_state == SimState.STOPPED:
+            self.logger.warn("Simulation is not running")
+            return
+
+        # If sim is running, acquire thread lock
+        if self.sim_state == SimState.RUNNING:
+            # Acquire thread lock
+            self.sim_thread_lock.acquire()
+
+        self.kill_thread = True
+        
+        # Release thread lock and let thread end itself
+        self.sim_thread_lock.release()
+
+        self.sim_thread.join()
+
+        # Set state to stopped
+        self.sim_state = SimState.STOPPED
