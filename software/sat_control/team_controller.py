@@ -45,7 +45,7 @@ class TeamController(SatControllerInterface):
 
     def test_function(self):
         # Example of logging
-        self.logger.info("Ayy lmao")
+        self.logger.info("Test 123")
         pass
 
     def team_reset(self) -> None:
