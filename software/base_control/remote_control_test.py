@@ -3,8 +3,8 @@ from base_control import BaseControl
 ctl = BaseControl("Remote")
 
 # Connect to satalite
-# ctl.connect_sat("192.168.51.11", 9000)
-ctl.connect_sat("localhost", 9000)
+ctl.connect_sat("192.168.51.17", 9000)
+# ctl.connect_sat("localhost", 9000)
 
 # Status callback
 def callback(status):
@@ -54,10 +54,10 @@ def main():
                 running = False
             elif event.type == pygame.JOYAXISMOTION:
                 #print("reading axis")
-                axis0 = deadzone(joysticks[0].get_axis(0), 0.05)
-                axis1 = deadzone(joysticks[0].get_axis(1), 0.05)
-                axis2 = deadzone(joysticks[0].get_axis(2), 0.05)
-                axis3 = deadzone(joysticks[0].get_axis(3), 0.05)
+                axis0 = deadzone(joysticks[0].get_axis(0), 0.2)
+                axis1 = deadzone(joysticks[0].get_axis(1), 0.2)
+                axis2 = deadzone(joysticks[0].get_axis(2), 0.15)
+                axis3 = deadzone(joysticks[0].get_axis(3), 0.15)
         
         # Print out axis
         print(axis0, axis1, axis2, axis3)
@@ -67,9 +67,9 @@ def main():
         #                 round(axis1 * 60, 2),
         #                 round(-axis0 / 0.5, 2)))
 
-        ctl.send_drive((round(-axis0 * 60, 2),
-                         round(axis1 * 60, 2),
-                         round(-axis1 / 0.5, 2)))
+        ctl.send_drive((round(axis0 * 30, 2),
+                         round(-axis1 * 30, 2),
+                         round(axis3 / 5.0, 2)))
 
 
         surface.fill((0,0,0))
@@ -80,7 +80,7 @@ def main():
         clock.tick(15)
  
     pygame.quit()
-    writeTwist(0, 0, 0)
+    ctl.send_drive(0, 0, 0)
  
 # Start loop
 main()

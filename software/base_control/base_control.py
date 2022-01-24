@@ -103,7 +103,7 @@ class BaseControl:
 
     def start_heartbeat(self, callback):
         # Create the heartbeat threat and start it
-        self.heartbeat_thread = threading.Thread(target = self.heartbeat, args=(callback,))
+        self.heartbeat_thread = threading.Thread(target = self.heartbeat, args=(callback,), daemon = True)
         self.heartbeat_thread.start()
 
     def send_drive(self, drivevals):
