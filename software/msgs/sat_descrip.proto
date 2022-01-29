@@ -4,6 +4,7 @@
 syntax = "proto3";
 
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
 
 package LEOHack;
 
@@ -88,7 +89,8 @@ message SystemState {
     State state = 1;
 
     // https://developers.google.com/protocol-buffers/docs/reference/csharp/class/google/protobuf/well-known-types/timestamp
-    google.protobuf.Timestamp elapsedTime = 2;
+    // https://developers.google.com/protocol-buffers/docs/reference/python-generated#timestamp
+    google.protobuf.Duration elapsedTime = 2;
     google.protobuf.Timestamp absoluteTime = 3;
 }
 

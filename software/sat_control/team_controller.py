@@ -28,6 +28,9 @@ class TeamController(SatControllerInterface):
 
     def team_run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState) -> sat_msgs.ThrustCommand:
 
+        # Get timedelta from elapsed time
+        elapsed_time = system_state.elapsedTime.ToTimedelta()
+        self.logger.info(f'Elapsed time: {elapsed_time}')
 
         # Example of persistant data
         self.counter += 1
@@ -39,9 +42,14 @@ class TeamController(SatControllerInterface):
         thrust_cmd = sat_msgs.ThrustCommand()
 
         # Set thrust command values
-        thrust_cmd.thrust.f_x = -2.0 * (satellite_state.pose.x - 2) - 3.0 * satellite_state.twist.v_x
-        thrust_cmd.thrust.f_y = -2.0 * (satellite_state.pose.y - 4 - 0.3) - 3.0 * satellite_state.twist.v_y
-        thrust_cmd.thrust.tau = -2.0 * (satellite_state.pose.theta + 2 - 3.1415) - 3.0 * satellite_state.twist.omega
+        if(elapsed_time.total_seconds() < 1.5):
+            thrust_cmd.thrust.f_x = 0.5
+        else:
+            thrust_cmd.thrust.f_x = -2.0 * (satellite_state.pose.x - 2) - 3.0 * satellite_state.twist.v_x
+            thrust_cmd.thrust.f_y = -2.0 * (satellite_state.pose.y - 4 - 0.3) - 3.0 * satellite_state.twist.v_y
+            thrust_cmd.thrust.tau = -2.0 * (satellite_state.pose.theta + 2 - 3.1415) - 3.0 * satellite_state.twist.omega
+
+        # Return thrust command
         return thrust_cmd
 
     def team_reset(self) -> None:

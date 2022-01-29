@@ -20,6 +20,8 @@ import meshcat.transformations as tf
 
 import threading
 import time
+import datetime
+from google.protobuf.timestamp_pb2 import Timestamp
 
 from enum import Enum
 
@@ -57,10 +59,13 @@ class Sim():
         self.kill_thread = False
 
         # Sim dt (seconds)
-        self.dt = 0.01
+        self.dt = 0.02
         self.sat_state = sat_msgs.SataliteState()
         self.dead_sat_state = sat_msgs.SataliteState()
         self.system_state = sat_msgs.SystemState()
+
+        # The start time of each sim run to calculate elapsed time
+        self.start_time = None
 
         # Zero out all states
         self.reset()
@@ -95,6 +100,17 @@ class Sim():
             if self.kill_thread:
                 self.logger.debug("Sim thread killed")
                 break
+            
+            # Update system state
+
+            # Update current time
+            # from: https://stackoverflow.com/questions/49161633/how-do-i-create-a-protobuf3-timestamp-in-python
+            self.current_time = datetime.datetime.now()
+            self.system_state.absoluteTime.FromDatetime(self.current_time)
+
+            # Update elapsed time
+            self.elapsed_time += datetime.timedelta(seconds=self.dt)
+            self.system_state.elapsedTime.FromTimedelta(self.elapsed_time)
 
             # SIM MATH
 
@@ -197,6 +213,9 @@ class Sim():
         self.logger.info("Resetting simulation")
 
         # Reset simulation
+
+        # Zero elapsed time
+        self.elapsed_time = datetime.timedelta(seconds=0)
 
         # Zero out the sat state
         self.sat_state.pose.x = 0.0
