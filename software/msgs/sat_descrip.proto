@@ -70,8 +70,11 @@ message SataliteState {
     // Satalite location
     Pose2D pose = 3;
 
+    // Satalite velocity
+    Twist2D twist = 4;
+
     // Used fuel
-    float fuel = 4;
+    float fuel = 5;
 }
 
 message SystemState {

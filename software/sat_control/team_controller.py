@@ -27,7 +27,8 @@ class TeamController(SatControllerInterface):
         return team_info
 
     def team_run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState) -> sat_msgs.ThrustCommand:
-        
+
+
         # Example of persistant data
         self.counter += 1
 
@@ -38,15 +39,10 @@ class TeamController(SatControllerInterface):
         thrust_cmd = sat_msgs.ThrustCommand()
 
         # Set thrust command values
-        thrust_cmd.thrust.f_x = 0.0
-        thrust_cmd.thrust.f_y = 0.0
-        thrust_cmd.thrust.tau = 0.0
+        thrust_cmd.thrust.f_x = -2.0 * (satellite_state.pose.x - 2) - 3.0 * satellite_state.twist.v_x
+        thrust_cmd.thrust.f_y = -2.0 * (satellite_state.pose.y - 4 - 0.3) - 3.0 * satellite_state.twist.v_y
+        thrust_cmd.thrust.tau = -2.0 * (satellite_state.pose.theta + 2 - 3.1415) - 3.0 * satellite_state.twist.omega
         return thrust_cmd
-
-    def test_function(self):
-        # Example of logging
-        self.logger.info("Test 123")
-        pass
 
     def team_reset(self) -> None:
         # Run any reset code

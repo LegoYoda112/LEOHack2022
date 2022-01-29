@@ -56,7 +56,14 @@ class Sim():
         # Boolean to break thread if stop is called
         self.kill_thread = False
 
-        self.test_num = 0.0
+        # Sim dt (seconds)
+        self.dt = 0.01
+        self.sat_state = sat_msgs.SataliteState()
+        self.dead_sat_state = sat_msgs.SataliteState()
+        self.system_state = sat_msgs.SystemState()
+
+        # Zero out all states
+        self.reset()
 
     def start_meshcat(self):
         # Open meshcat window
@@ -90,13 +97,38 @@ class Sim():
                 break
 
             # SIM MATH
-            self.test_num += 0.01
 
-            # Run test function
-            self.sat_controller.test_function()
+            # Integrate
+            self.sat_state.pose.x += self.sat_state.twist.v_x * self.dt
+            self.sat_state.pose.y += self.sat_state.twist.v_y * self.dt
+            self.sat_state.pose.theta += self.sat_state.twist.omega * self.dt
+
+            # Run team controller
+            thrust_command = self.sat_controller.run(self.system_state, self.sat_state)
+
+            if(thrust_command == None):
+                self.logger.error("Error encountered in team controller")
+            else:
+                # Integrate
+                self.sat_state.twist.v_x += thrust_command.thrust.f_x * self.dt
+                self.sat_state.twist.v_y += thrust_command.thrust.f_y * self.dt
+                self.sat_state.twist.omega += thrust_command.thrust.tau * self.dt
 
             # Update visualizer
-            self.vis["dead_sat"].set_transform(tf.translation_matrix([self.test_num, 0, 0]))
+            self.vis["team_sat"].set_transform(
+                tf.translation_matrix([
+                    self.sat_state.pose.x, 
+                    self.sat_state.pose.y, 
+                    0]).dot(tf.rotation_matrix(self.sat_state.pose.theta, 
+                [0, 0, 1])))
+
+                # Update visualizer
+            self.vis["dead_sat"].set_transform(
+                tf.translation_matrix([
+                    self.dead_sat_state.pose.x, 
+                    self.dead_sat_state.pose.y, 
+                    0]).dot(tf.rotation_matrix(self.dead_sat_state.pose.theta, 
+                [0, 0, 1])))
 
             self.logger.debug("Running thread")
             
@@ -104,7 +136,7 @@ class Sim():
             self.sim_thread_lock.release()
 
             # Wait amount of time
-            time.sleep(0.03)
+            time.sleep(self.dt)
 
         self.logger.info("Simulation ended")
 
@@ -165,7 +197,27 @@ class Sim():
         self.logger.info("Resetting simulation")
 
         # Reset simulation
-        self.test_num = 0.0
+
+        # Zero out the sat state
+        self.sat_state.pose.x = 0.0
+        self.sat_state.pose.y = 0.0
+        self.sat_state.pose.theta = 0.0
+
+        self.sat_state.twist.v_x = 0.0
+        self.sat_state.twist.v_y = 0.0
+        self.sat_state.twist.omega = 0.0
+
+        # Init the dead sat state
+        self.dead_sat_state.pose.x = 2.0
+        self.dead_sat_state.pose.y = 4.0
+        self.dead_sat_state.pose.theta = -2.0
+
+        self.dead_sat_state.twist.v_x = 0.0
+        self.dead_sat_state.twist.v_y = 0.0
+        self.dead_sat_state.twist.omega = 0.0
+
+        # Run team init code
+        self.sat_controller.team_init()
 
     def reload(self):
         self.logger.info("Reloading controller")

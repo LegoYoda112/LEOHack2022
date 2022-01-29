@@ -7,8 +7,9 @@ sys.path.append("../msgs/")
 sys.path.append("software/msgs/")
 import sat_descrip_pb2 as sat_msgs
 
-# Import logging library
+# Import logging and traceback library
 import logging
+import traceback
 
 # The sat controller class contains all the required information
 # to control and simulate a "satalite"
@@ -63,7 +64,13 @@ class SatControllerInterface(ABC):
         return team_info
 
     def run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState) -> sat_msgs.ThrustCommand:
-        return self.team_run(system_state, satellite_state)
+        try:
+            thrust_cmd = self.team_run(system_state, satellite_state)
+        except Exception as e:
+            self.logger.error(f'Exception in run function.')
+            self.logger.error(traceback.format_exc())
+            thrust_cmd = None
+        return thrust_cmd
 
     def reset(self):
         self.team_reset()
