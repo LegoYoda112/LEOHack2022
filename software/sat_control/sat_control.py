@@ -1,6 +1,6 @@
 from sat_comms import SatComms
 
-improt serial
+import serial
 
 # Start serial connection to rpi pico
 self.ser = serial.Serial(serial_name, 115200, write_timeout = 0.001)

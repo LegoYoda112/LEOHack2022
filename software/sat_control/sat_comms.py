@@ -6,31 +6,29 @@ import serial
 
 import logging
 
+from sat_controller import SatControllerInterface
+
 class SatComms:
-    def __init__(self, name):
+    def __init__(self, name, serial_name):
         # Init ZMQ socket
         self.sock = zmq.Context().socket(zmq.REP)
         self.sock.bind("tcp://0.0.0.0:9000")
 
         # Assign sat name
         self.name = name
-
-        # Drive and Reset callback placeholder
-        self.drive_callback = None
-        self.reset_callback = None
+        
+        # Place holder for serial
+        self.ser = None
 
         # Variable to store if we have just disconnected
         self.lost_connection = False
 
         self.logger = logging.getLogger(__name__)
 
-    def register_drive_callback(self, callback):
-        self.drive_callback = callback
-
-    def register_reset_callback(self, callback):
-        self.reset_callback = callback
-
     def start(self):
+
+        # Set up serial port and connect
+        self.ser = serial.Serial(serial_name, 115200, write_timeout = 0.001)
 
         # Create the comms thread
         self.thread = threading.Thread(target= self.comms_thread, args = ())
@@ -75,8 +73,8 @@ class SatComms:
                     response = self.receive_heartbeat(split_message[1])
                 elif split_message[0] == "INIT":
                     response = self.receive_INIT(split_message[1])
-                elif split_message[0] == "DRIVE":
-                    response = self.receive_DRIVE(split_message[1:])
+                elif split_message[0] == "RUN":
+                    response = self.receive_RUN(split_message[1:])
                 
                 # Send a reply
                 self.sock.send_string(response)
@@ -106,14 +104,67 @@ class SatComms:
         return "ACK " + str(self.name)
 
     # If a DRIVE message is received
-    def receive_DRIVE(self, message):
-        self.logger.debug("Received DRIVE: ")
+    def receive_RUN(self, message):
+        self.logger.debug("Received RUN: ")
 
-        self.drive_callback(float(message[0]), float(message[1]), float(message[2]))
+        twist_msg = message.thrust
+        time_step = message.time_step
 
-        return "ACK"
+        self.write_impulse(twist_msg, time_step)
+        return "ACK " + return_msg
+
+    # Writes a force to the sat, returns current position
+    # Note this is technically an impulse,
+    # as it will only be applied for the next update
+    def write_impulse(self, twist_msg, time_step):
+        self.logger.debug("Writing twist")
+        xs = twist_msg.f_x * time_step
+        ys= twist_msg.f_y * time_step
+        taus = twist_msg.tau * time_step
+
+        
+        sendString = "twist %.2f %.2f %.2f\n" % (xs, ys, taus)
+
+        # Flush input, output, then send string
+        try:
+            self.ser.flushInput()
+            self.ser.flushOutput()
+            self.ser.write(bytes(sendString, "utf-8"))
+        except Exception as e:
+            print(e)
+
+    # Writes an absolute position update to the sat
+    def write_pos_update(self, pose_msg):
+        self.logger.debug("Writing pos update")
+        x = pose_msg.x
+        y = pose_msg.y
+        theta = pose_msg.theta
+
+        # Position update string
+        sendString = "pos %.2f %.2f %.2f\n" % (x, y, theta)
+
+        # Flush input, output, then send string
+        try:
+            self.ser.flushInput()
+            self.ser.flushOutput()
+            self.ser.write(bytes(sendString, "utf-8"))
+        except Exception as e:
+            print(e)
+
+    # Write a reset message to the sat
+    def write_reset(self):
+        self.logger.debug("Writing pos update")
+
+        # Flush input, output, then send string
+        try:
+            self.ser.flushInput()
+            self.ser.flushOutput()
+            self.ser.write(bytes("reset", "utf-8"))
+        except Exception as e:
+            print(e)
 
     # Sat reset (either called, or if comms is lost)
     def reset(self):
         self.logger.debug("Resetting")
+        self.write_twist(0, 0, 0)
         self.reset_callback()

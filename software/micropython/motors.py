@@ -34,25 +34,41 @@ class Encoder():
         return vel
 
 class Motor:
-    def __init__(self, dir_pin_num, pwm_pin_num):
-        self.dir_pin = Pin(dir_pin_num, machine.Pin.OUT)
-        self.pwm_pin = Pin(pwm_pin_num, machine.Pin.OUT)
-        self.pwm = machine.PWM(self.pwm_pin)
+    def __init__(self, pin_A, pin_B, has_dir = False):
+        self.pin_A = Pin(pin_A, machine.Pin.OUT)
+        self.pin_B = Pin(pin_B, machine.Pin.OUT)
+        self.pin_A_pwm = machine.PWM(self.pin_A)
+        self.pin_B_pwm = machine.PWM(self.pin_B)
         
-        self.pwm.freq(100000)
+        self.pin_A_pwm.freq(100000)
+        self.pin_B_pwm.freq(100000)
+        
+        self.has_dir = has_dir
     
     def setEncoder(self, pin_A_num, pin_B_num):
         self.encoder = Encoder(pin_A_num, pin_B_num)
     
     def setPower(self, power):
-        if(power > 0):
-            self.dir_pin.on()
+        
+        if(self.has_dir):
+            if(power > 0):
+                self.dir_pin.on()
+            else:
+                self.dir_pin.off()
+            
+            power = abs(power)
+
+            self.pwm.duty_u16(int(power * 65536.0))
+            
         else:
-            self.dir_pin.off()
-        
-        power = abs(power)
-        self.pwm.duty_u16(int(power * 65536.0))
-        
+            print(power)
+            if(power > 0):
+                self.pin_A_pwm.duty_u16(0)
+                self.pin_B_pwm.duty_u16(int(abs(power) * 65536.0))
+            else:
+                self.pin_A_pwm.duty_u16(int(abs(power) * 65536.0))
+                self.pin_B_pwm.duty_u16(0)
+                
 
 class Motors:
     def __init__(self):
@@ -65,3 +81,4 @@ class Motors:
         self.motor3 = Motor(8, 7)
         self.motor3.setEncoder(18, 17)
        
+
