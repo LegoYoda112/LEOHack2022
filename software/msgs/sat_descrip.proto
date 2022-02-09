@@ -78,7 +78,7 @@ message SataliteState {
     // Satalite velocity
     Twist2D twist = 4;
 
-    // Used fuel
+    // Used fuel (tracks impulse over time)
     float fuel = 5;
 }
 
