@@ -42,6 +42,12 @@ message TeamInfo {
     uint32 teamID = 2;
 }
 
+message ServoStates{
+    float servo1 = 1;
+    float servo2 = 2;
+    float servo3 = 3;
+}
+
 // Satalite description
 // Sent during first connect and handshakes with satalite and team code
 // Defines name, team ID, thruster config, mass and inertia

@@ -19,7 +19,7 @@ class SatComms:
         self.name = name
         
         # Place holder for serial
-        self.ser = None
+        # self.ser = None
 
         # Variable to store if we have just disconnected
         self.lost_connection = False
@@ -34,18 +34,18 @@ class SatComms:
         self.sat.inertia = 1
 
         # Sat frames
-        self.odom_frame = sat_msgs.Pose2D
-        self.sat_frame = sat_msgs.Pose2D
-        self.offset_frame = sat_msgs.Pose2D
+        self.odom_frame = sat_msgs.Pose2D()
+        self.sat_frame = sat_msgs.Pose2D()
+        self.offset_frame = sat_msgs.Pose2D()
 
         # Velocities
-        self.local_sat_vel = sat_msgs.Twist2D
-        self.global_sat_vel = sat_msgs.Twist2D
+        self.local_sat_vel = sat_msgs.Twist2D()
+        self.global_sat_vel = sat_msgs.Twist2D()
 
     def start(self, serial_name):
         """ Starts the sat communication """
         # Set up serial port and connect
-        self.ser = serial.Serial(serial_name, 115200, write_timeout = 0.001)
+        # self.ser = serial.Serial(serial_name, 115200, write_timeout = 0.001)
 
         # Create the comms thread
         self.thread = threading.Thread(target= self.comms_thread, args = ())
@@ -93,6 +93,7 @@ class SatComms:
                     response = self.receive_init(data_bytes.decode("utf-8"))
                     response_bytes = response.encode("utf-8")
                 elif cmd == "CTL":
+                    print("Recived control message")
                     response = self.receive_control(data_bytes)
                     response_bytes = response
                 
@@ -130,17 +131,23 @@ class SatComms:
         """ Handle control message """
         self.logger.debug("Received RUN: ")
 
+        ctl_msg = sat_msgs.ControlMessage()
+        ctl_msg.ParseFromString(message)
+        # print(ctl_msg)
+
         # Update odometry
         self.update_odom_frame()
-        self.update_odom_offset(message.absolute_pose)
+        self.update_odom_offset(ctl_msg.absolute_pose)
 
-        thrust = message.thrust
-        time_step = message.time_step
+        thrust = ctl_msg.thrust
+        time_step = ctl_msg.time_step
 
         # Update 
+        self.global_sat_vel.v_x += thrust.f_x * time_step
         self.global_sat_vel.v_y += thrust.f_y * time_step
-        self.global_sat_vel.v_y += thrust.f_x * time_step
         self.global_sat_vel.omega += thrust.tau * time_step
+
+        print(self.global_sat_vel.v_x)
 
         # Make sat state message
         sat_state = sat_msgs.SataliteState()
@@ -148,31 +155,34 @@ class SatComms:
         sat_state.twist.CopyFrom(self.global_sat_vel)
         
         # Return
-        return sat_state.SerealizeToString()
+        return sat_state.SerializeToString()
 
     def cmd_vel_and_servo(self, cmd_vel, servo_states):
         """ Writes desired velocity and servo states """
         self.logger.debug("Writing vel and servo")
         
-        send_string = "ctl %.2f %.2f %.2f" % (cmd_vel.x, cmd_vel.y, cmd_vel.omega)
+        send_string = "ctl %.2f %.2f %.2f" % (cmd_vel.v_x, cmd_vel.v_y, cmd_vel.omega)
         send_string += "%.2f %.2f %.2f\n" % (servo_states.servo1, servo_states.servo2, servo_states.servo3)
 
         # Flush input, output, then send string
         try:
-            self.ser.flushInput()
-            self.ser.flushOutput()
-            self.ser.write(bytes(send_string, "utf-8"))
+            pass
+            # self.ser.flushInput()
+            # self.ser.flushOutput()
+            # self.ser.write(bytes(send_string, "utf-8"))
         except Exception as e:
             print(e)
 
     def update_odom_frame(self):
         """ Updates odometry frame """
         try:
+            pass
             # Requests odom frame
-            self.ser.write(bytes("odom\n", "utf-8"))
+            # self.ser.write(bytes("odom\n", "utf-8"))
 
             # Recives and parses the odometry frame
-            odom_frame = self.ser.readline()
+            # odom_frame = # self.ser.readline()
+            odom_frame = "0.0 0.0 0.0 0.0 0.0 0.0"
             odom_frame = odom_frame.split(" ")
             odom_frame = [float(num) for num in odom_frame]
 
@@ -216,14 +226,28 @@ class SatComms:
 
         # Flush input, output, then send string
         try:
-            self.ser.flushInput()
-            self.ser.flushOutput()
-            self.ser.write(bytes("reset", "utf-8"))
+            pass
+            # self.ser.flushInput()
+            # self.ser.flushOutput()
+            # self.ser.write(bytes("reset", "utf-8"))
         except Exception as e:
             print(e)
 
     # Sat reset (either called, or if comms is lost)
     def reset(self):
+        """ Resets sat """
         self.logger.debug("Resetting")
-        self.write_twist(0, 0, 0)
-        self.reset_callback()
+
+        zero_vel = sat_msgs.Twist2D()
+        zero_vel.v_x = 0
+        zero_vel.v_y = 0
+        zero_vel.omega = 0
+
+        self.global_sat_vel.CopyFrom(zero_vel)
+
+        zero_servo = sat_msgs.ServoStates()
+        zero_servo.servo1 = 0
+        zero_servo.servo2 = 0
+        zero_servo.servo3 = 0
+
+        self.cmd_vel_and_servo(zero_vel, zero_servo)

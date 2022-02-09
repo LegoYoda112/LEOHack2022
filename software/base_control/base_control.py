@@ -41,6 +41,7 @@ class BaseControl:
         print()
 
         if isinstance(data, bytes):
+            print(data)
             self.send_socket.send(msg.encode("utf-8") + data)
         else:
             self.send_socket.send(msg.encode("utf-8") + data.encode("utf-8"))
@@ -83,7 +84,7 @@ class BaseControl:
     def ping(self, timeout):
         """Pings the sat""" 
         self.comms_lock.acquire()
-        print(" ==== Ping lock")
+        # print(" ==== Ping lock")
 
         # Send message
         self.send_msg("HBB", "ping")
@@ -94,7 +95,7 @@ class BaseControl:
 
         events = poller.poll(timeout * 1000)
 
-        print(" ==== Ping unlock")
+        # print(" ==== Ping unlock")
         self.comms_lock.release()
 
         # Debug, 
@@ -109,38 +110,40 @@ class BaseControl:
             return True
 
     # Heartbeat to check if 
-    def heartbeat(self, callback):
+    def heartbeat(self):
         """Heartbeat thread that pings the satalite every second"""
         # Loop that pings the sat every second
         while(True):
             print("ping!")
             status = self.ping(5) # ping with timeout of 5 seconds
 
-            # Call callback with status
-            callback(status)
-
             time.sleep(1) # wait one second
 
-    def start_heartbeat(self, callback = None):
+    def start_heartbeat(self):
         """Starts the heartbeat thread"""
         # Create the heartbeat threat and start it
-        self.heartbeat_thread = threading.Thread(target = self.heartbeat, args=(callback,), daemon = True)
+        self.heartbeat_thread = threading.Thread(target = self.heartbeat, args=(), daemon = True)
         self.heartbeat_thread.start()
 
     def send_control(self, control_message):
         """ Sends control message """
         self.comms_lock.acquire()
-        print(" ==== Control lock")
+        # print(" ==== Control lock")
 
         t0 = time.time()
 
 
         self.send_msg("CTL", control_message.SerializeToString())
-        print(self.send_socket.recv())
+
+        state_msg = sat_msgs.SataliteState()
+        rcv_msg = self.send_socket.recv()
+        state_msg.ParseFromString(rcv_msg)
+
+        print(state_msg)
 
         t1 = time.time()
 
-        print(round((t1 - t0) * 1000), "ms")
+        print("Round trip time", round((t1 - t0) * 1000), "ms")
 
-        print(" ==== Control unlock")
+        # print(" ==== Control unlock")
         self.comms_lock.release()
