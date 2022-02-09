@@ -11,3 +11,7 @@ When a team first connects into the satellite "network", a handshake process is 
 
 pip install zmq
 pip install protobuf
+pip install colored logs
+pip install numpy
+pip install meshcat
+pip install argparse

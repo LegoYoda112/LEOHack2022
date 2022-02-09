@@ -18,6 +18,7 @@ import traceback
 # to provide the control necessary to run the satalite
 
 class SatControllerInterface(ABC):
+    """ Interface to build sat controllers on """
 
     def __init__(self):
         
@@ -28,7 +29,7 @@ class SatControllerInterface(ABC):
         self.logger = logging.getLogger(__name__)
 
     # Check if abstract methods have been implemented
-    def __subclasshook__(cls, subclass):
+    def __subclasshook__(self, subclass):
         return (hasattr(subclass, 'run') and
                 callable(subclass.run) and
                 hasattr(subclass, 'init') and
@@ -63,9 +64,9 @@ class SatControllerInterface(ABC):
 
         return team_info
 
-    def run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState) -> sat_msgs.ControlMessage:
+    def run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState, dead_sat_state: sat_msgs.SataliteState) -> sat_msgs.ControlMessage:
         try:
-            thrust_cmd = self.team_run(system_state, satellite_state)
+            thrust_cmd = self.team_run(system_state, satellite_state, dead_sat_state)
         except Exception as e:
             self.logger.error(f'Exception in run function.')
             self.logger.error(traceback.format_exc())

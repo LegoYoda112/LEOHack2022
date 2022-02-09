@@ -6,8 +6,10 @@ from sat_controller import SatControllerInterface, sat_msgs
 # Specifically, init, run, abort and reset
 
 class TeamController(SatControllerInterface):
+    """ Team control code """
 
     def team_init(self):
+        """ Runs any team based initialization """
         # Run any initialization you need
 
         # Example of persistant data
@@ -26,7 +28,10 @@ class TeamController(SatControllerInterface):
         # Return team info
         return team_info
 
-    def team_run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState) -> sat_msgs.ControlMessage:
+    def team_run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState, dead_sat_state: sat_msgs.SataliteState) -> sat_msgs.ControlMessage:
+        """ Takes in a system state and a satellite state and returns a control message """
+
+        print(dead_sat_state)
 
         # Get timedelta from elapsed time
         elapsed_time = system_state.elapsedTime.ToTimedelta()

@@ -1,3 +1,4 @@
+from re import T
 import sys
 import os
 
@@ -26,13 +27,16 @@ from google.protobuf.timestamp_pb2 import Timestamp
 from enum import Enum
 
 class SimState(Enum):
+    """ Simulator state enum """
     STOPPED = 0
     RUNNING = 1
     PAUSED = 2
 
 class Sim():
+    """Sat simulator"""
     
-    def __init__(self, logging_level):
+    def __init__(self, logging_level, challange_level = 1, timestep = 0.05):
+        """Takes in logging level and constructs a sim object"""
 
         # Install colored logs :)
         coloredlogs.install(level=logging_level)
@@ -59,7 +63,7 @@ class Sim():
         self.kill_thread = False
 
         # Sim dt (seconds)
-        self.dt = 0.02
+        self.dt = timestep
         self.sat_state = sat_msgs.SataliteState()
         self.dead_sat_state = sat_msgs.SataliteState()
         self.system_state = sat_msgs.SystemState()
@@ -67,10 +71,14 @@ class Sim():
         # The start time of each sim run to calculate elapsed time
         self.start_time = None
 
+        # Sets challange level (adjusts how dead sat operates)
+        self.challange_level = challange_level
+
         # Zero out all states
         self.reset()
 
     def start_meshcat(self):
+        """ Starts meshcat and loads in sats """
         # Open meshcat window
         self.vis = meshcat.Visualizer()
         self.vis.open()
@@ -84,6 +92,7 @@ class Sim():
         self.logger.info("Meshcat started")
 
     def load_team_controller(self):
+        """ Loads the teamcontroller """
         # Reload team controller module
         importlib.reload(team_controller)
         self.sat_controller = team_controller.TeamController()
@@ -91,6 +100,7 @@ class Sim():
         self.logger.debug("Reloaded team controller")
 
     def sim_thread_function(self):
+        """ Sim loop thread """
         self.logger.info("Starting sim thread")
 
         while True:
@@ -114,13 +124,16 @@ class Sim():
 
             # SIM MATH
 
+            # Update dead sat pose
+            self.update_dead_sat_pose()
+
             # Integrate
             self.sat_state.pose.x += self.sat_state.twist.v_x * self.dt
             self.sat_state.pose.y += self.sat_state.twist.v_y * self.dt
             self.sat_state.pose.theta += self.sat_state.twist.omega * self.dt
 
             # Run team controller
-            thrust_command = self.sat_controller.run(self.system_state, self.sat_state)
+            thrust_command = self.sat_controller.run(self.system_state, self.sat_state, self.dead_sat_state)
 
             if(thrust_command == None):
                 self.logger.error("Error encountered in team controller")
@@ -156,7 +169,29 @@ class Sim():
 
         self.logger.info("Simulation ended")
 
+    def update_dead_sat_pose(self):
+        """ Updates the dead sat pose based on challange level """
+
+        t = self.elapsed_time.total_seconds()
+
+        if(self.challange_level == 1):
+            # LEVEL 1 = Stationary sat
+            self.dead_sat_state.pose.x = 1.5
+            self.dead_sat_state.pose.y = 2.0 
+            self.dead_sat_state.pose.theta = 0.5
+        elif(self.challange_level == 2):
+            # LEVEL 2 = Translating sat
+            self.dead_sat_state.pose.x = 0.5 + t * 0.01
+            self.dead_sat_state.pose.y = 0.2 + t * -0.02
+            self.dead_sat_state.pose.theta = -0.4
+        elif(self.challange_level == 3):
+            # LEVEL 3 Translating and rotating sat
+            self.dead_sat_state.pose.x = 0.5 + t * 0.02
+            self.dead_sat_state.pose.y = 0.2 + t * -0.01
+            self.dead_sat_state.pose.theta = -0.4 + t * 0.05
+
     def start(self):
+        """ Starts the simulation """
         self.logger.info("Starting simulation")
 
         # Reset all simulation constants
@@ -170,6 +205,7 @@ class Sim():
         self.sim_state = SimState.RUNNING
 
     def pause(self):
+        """ Pauses the simulation """
         self.logger.info("Pausing simulation")
 
         # If sim is running, pause it
@@ -189,6 +225,7 @@ class Sim():
             self.logger.warn("Simulation is not running")
 
     def play(self):
+        """ Plays the simulation """
         self.logger.info("Playing simulation")
 
         # If sim is paused, play it
@@ -209,6 +246,7 @@ class Sim():
             self.logger.warn("Simulation is has been stopped")
 
     def reset(self):
+        """ Resets the simulation """
         self.pause()
         self.logger.info("Resetting simulation")
 
@@ -239,6 +277,7 @@ class Sim():
         self.sat_controller.team_init()
 
     def reload(self):
+        """ Reloads the team controller and resets"""
         self.logger.info("Reloading controller")
 
         # Reload team controller
@@ -246,6 +285,7 @@ class Sim():
         self.reset()
 
     def end(self):
+        """ Stops the simulation """
         self.logger.info("Ending simulation")
 
         if self.sim_state == SimState.STOPPED:
