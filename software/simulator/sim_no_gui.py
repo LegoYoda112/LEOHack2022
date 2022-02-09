@@ -22,9 +22,11 @@ args = parser.parse_args()
 sim = Sim(args.loglevel, 3)
 sim.start_meshcat()
 
-input("Input any key to run sim")
+input("Hit enter to continue running")
 
 sim.start()
 
 while(1):
     time.sleep(1)
+
+sim.end()
