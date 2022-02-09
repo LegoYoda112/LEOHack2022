@@ -1,4 +1,3 @@
-from operator import truediv
 import threading
 import time
 import logging
@@ -11,7 +10,7 @@ from sat_controller import sat_msgs
 
 class SatComms:
     """ Class to handle sat communication and control """
-    def __init__(self, name, serial_name):
+    def __init__(self, name):
         # Init ZMQ socket
         self.sock = zmq.Context().socket(zmq.REP)
         self.sock.bind("tcp://0.0.0.0:9000")
@@ -29,12 +28,21 @@ class SatComms:
 
         self.thread = None
 
-        # Various frames
+        # Sat description
+        self.sat = sat_msgs.SatelliteDescription()
+        self.sat.mass = 1
+        self.sat.inertia = 1
+
+        # Sat frames
         self.odom_frame = sat_msgs.Pose2D
         self.sat_frame = sat_msgs.Pose2D
         self.offset_frame = sat_msgs.Pose2D
 
-    def start(self):
+        # Velocities
+        self.local_sat_vel = sat_msgs.Twist2D
+        self.global_sat_vel = sat_msgs.Twist2D
+
+    def start(self, serial_name):
         """ Starts the sat communication """
         # Set up serial port and connect
         self.ser = serial.Serial(serial_name, 115200, write_timeout = 0.001)
@@ -69,25 +77,27 @@ class SatComms:
                 self.lost_connection = False
 
                 # Decode received message
-                message = events[0][0].recv().decode("utf-8")
+                message = events[0][0].recv()
 
-                # Split into command and args
-                split_message = message.split(" ")
+                cmd_bytes = message[:3]
+                cmd = cmd_bytes.decode("utf-8")
+                data_bytes = message[3:]
 
-                self.logger.debug(split_message)
-
-                response = "default"
+                response_bytes = b"default"
                 
                 # Switch based on command
-                if split_message[0] == "HB":
-                    response = self.receive_heartbeat(split_message[1])
-                elif split_message[0] == "INIT":
-                    response = self.receive_INIT(split_message[1])
-                elif split_message[0] == "RUN":
-                    response = self.receive_RUN(split_message[1:])
+                if cmd == "HBB":
+                    response = self.receive_heartbeat(data_bytes.decode("utf-8"))
+                    response_bytes = response.encode("utf-8")
+                elif cmd == "INI":
+                    response = self.receive_init(data_bytes.decode("utf-8"))
+                    response_bytes = response.encode("utf-8")
+                elif cmd == "CTL":
+                    response = self.receive_control(data_bytes)
+                    response_bytes = response
                 
                 # Send a reply
-                self.sock.send_string(response)
+                self.sock.send(response_bytes)
             else:
                 self.logger.debug("No message received, resetting")
 
@@ -124,24 +134,34 @@ class SatComms:
         self.update_odom_frame()
         self.update_odom_offset(message.absolute_pose)
 
-        twist_msg = message.thrust
+        thrust = message.thrust
         time_step = message.time_step
 
+        # Update 
+        self.global_sat_vel.v_y += thrust.f_y * time_step
+        self.global_sat_vel.v_y += thrust.f_x * time_step
+        self.global_sat_vel.omega += thrust.tau * time_step
+
+        # Make sat state message
+        sat_state = sat_msgs.SataliteState()
+        sat_state.pose.CopyFrom(self.sat_frame)
+        sat_state.twist.CopyFrom(self.global_sat_vel)
         
-        return "ACK " + return_msg
+        # Return
+        return sat_state.SerealizeToString()
 
     def cmd_vel_and_servo(self, cmd_vel, servo_states):
         """ Writes desired velocity and servo states """
         self.logger.debug("Writing vel and servo")
         
-        sendString = "ctl %.2f %.2f %.2f" % (cmd_vel.x, cmd_vel.y, cmd_vel.omega)
-        sendString += "%.2f %.2f %.2f\n" % (servo_states.servo1, servo_states.servo2, servo_states.servo3)
+        send_string = "ctl %.2f %.2f %.2f" % (cmd_vel.x, cmd_vel.y, cmd_vel.omega)
+        send_string += "%.2f %.2f %.2f\n" % (servo_states.servo1, servo_states.servo2, servo_states.servo3)
 
         # Flush input, output, then send string
         try:
             self.ser.flushInput()
             self.ser.flushOutput()
-            self.ser.write(bytes(sendString, "utf-8"))
+            self.ser.write(bytes(send_string, "utf-8"))
         except Exception as e:
             print(e)
 
@@ -156,9 +176,15 @@ class SatComms:
             odom_frame = odom_frame.split(" ")
             odom_frame = [float(num) for num in odom_frame]
 
+            # Update 
             self.odom_frame.x = odom_frame[0]
             self.odom_frame.y = odom_frame[1]
             self.odom_frame.theta = odom_frame[2]
+
+            # Update sat velocity
+            self.local_sat_vel.v_x = odom_frame[3]
+            self.local_sat_vel.v_y = odom_frame[4]
+            self.local_sat_vel.omega = odom_frame[5]
         except Exception as e:
             print(e)
 

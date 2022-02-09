@@ -26,7 +26,7 @@ class TeamController(SatControllerInterface):
         # Return team info
         return team_info
 
-    def team_run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState) -> sat_msgs.ThrustCommand:
+    def team_run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState) -> sat_msgs.ControlMessage:
 
         # Get timedelta from elapsed time
         elapsed_time = system_state.elapsedTime.ToTimedelta()
@@ -39,7 +39,7 @@ class TeamController(SatControllerInterface):
         self.logger.info(f'Counter value: {self.counter}')
 
         # Create a thrust command message
-        thrust_cmd = sat_msgs.ThrustCommand()
+        thrust_cmd = sat_msgs.ControlMessage()
 
         # Set thrust command values
         if(elapsed_time.total_seconds() < 1.5):

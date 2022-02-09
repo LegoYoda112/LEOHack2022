@@ -8,3 +8,6 @@ When a team first connects into the satellite "network", a handshake process is 
 - The team code fills out their name and id, and sends it back to the base control.
 - The base control updates itself and sends the description to the satellite
 - The satellite responds to the base station and team laptop with a success message, informing both that the link has been set up.
+
+pip install zmq
+pip install protobuf

@@ -3,6 +3,11 @@ import threading
 
 import zmq
 
+import sys
+sys.path.append("../msgs/")
+sys.path.append("software/msgs/")
+import sat_descrip_pb2 as sat_msgs
+
 class SatConnection:
     """ Stores sat connection information """
     def __init__(self, name, ip, port):
@@ -33,11 +38,12 @@ class BaseControl:
 
     def send_msg(self, msg, data):
         """ Sends a byte message to the sat, msg must be 3 characters long """
+        print()
 
-        if data.isinstance(bytes):
-            self.send_socket.send(msg.encode("utf-8"), data)
+        if isinstance(data, bytes):
+            self.send_socket.send(msg.encode("utf-8") + data)
         else:
-            self.send_socket.send(msg.encode("utf-8"), data.encode("utf"))
+            self.send_socket.send(msg.encode("utf-8") + data.encode("utf-8"))
 
     def connect_sat(self, ip, port, timeout = 1):
         """ Connects to specified sat """
@@ -58,6 +64,8 @@ class BaseControl:
         if(len(events) == 0):
             print("Connection Failed")
             self.send_socket.close()
+
+            raise Exception("No satalite at ip")
 
             return (False, "")
 
@@ -113,7 +121,7 @@ class BaseControl:
 
             time.sleep(1) # wait one second
 
-    def start_heartbeat(self, callback):
+    def start_heartbeat(self, callback = None):
         """Starts the heartbeat thread"""
         # Create the heartbeat threat and start it
         self.heartbeat_thread = threading.Thread(target = self.heartbeat, args=(callback,), daemon = True)
@@ -125,7 +133,9 @@ class BaseControl:
         print(" ==== Control lock")
 
         t0 = time.time()
-        self.send_msg("CTL", control_message)
+
+
+        self.send_msg("CTL", control_message.SerializeToString())
         print(self.send_socket.recv())
 
         t1 = time.time()
