@@ -65,7 +65,6 @@ message SatelliteDescription {
 // Satalite state
 // Reply from the satalite that contain
 message SataliteState {
-    bool active = 2;
 
     // Satalite location
     Pose2D pose = 3;
@@ -96,13 +95,16 @@ message SystemState {
 // =============== SATTALITE COMMANDS ===============
 
 message ControlMessage {
+    // Wether or not to apply sent thrust commands
+    bool active = 1;
+
     // Thrust command
-    Wrench2D thrust = 1;
+    Wrench2D thrust = 2;
 
     // Absolute pose read by the camera system
-    Pose2D absolute_pose = 2;
+    Pose2D absolute_pose = 3;
 
     // Control loop period
     // for providing accurate impulse control
-    float time_step = 3;
+    float time_step = 4;
 }

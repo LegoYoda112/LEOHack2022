@@ -1,14 +1,16 @@
-import zmq
+from operator import truediv
 import threading
 import time
+import logging
+
+import zmq
 
 import serial
 
-import logging
-
-from sat_controller import SatControllerInterface
+from sat_controller import sat_msgs
 
 class SatComms:
+    """ Class to handle sat communication and control """
     def __init__(self, name, serial_name):
         # Init ZMQ socket
         self.sock = zmq.Context().socket(zmq.REP)
@@ -25,8 +27,15 @@ class SatComms:
 
         self.logger = logging.getLogger(__name__)
 
-    def start(self):
+        self.thread = None
 
+        # Various frames
+        self.odom_frame = sat_msgs.Pose2D
+        self.sat_frame = sat_msgs.Pose2D
+        self.offset_frame = sat_msgs.Pose2D
+
+    def start(self):
+        """ Starts the sat communication """
         # Set up serial port and connect
         self.ser = serial.Serial(serial_name, 115200, write_timeout = 0.001)
 
@@ -42,10 +51,11 @@ class SatComms:
         while True:
             time.sleep(1)
 
-        thread.join()
+        # thread.join()
 
     # Coms thread to handle receiving and responding to base station messages
     def comms_thread(self):
+        """ Communication thread """
         while True:
 
             # Register a poller to revice messages
@@ -92,11 +102,13 @@ class SatComms:
     
     # When a heartbeat is received
     def receive_heartbeat(self, message):
+        """Handle recived heartbeat message """ 
         self.logger.debug("Received HB: " + message)
         return self.name
 
     # If an INIT message is received
-    def receive_INIT(self, message):
+    def receive_init(self, message):
+        """ Handle recived init message """ 
         self.logger.debug("Received INIT: " + message)
 
         self.logger.info("Connected to base_station")
@@ -104,26 +116,26 @@ class SatComms:
         return "ACK " + str(self.name)
 
     # If a DRIVE message is received
-    def receive_RUN(self, message):
+    def receive_control(self, message):
+        """ Handle control message """
         self.logger.debug("Received RUN: ")
+
+        # Update odometry
+        self.update_odom_frame()
+        self.update_odom_offset(message.absolute_pose)
 
         twist_msg = message.thrust
         time_step = message.time_step
 
-        self.write_impulse(twist_msg, time_step)
+        
         return "ACK " + return_msg
 
-    # Writes a force to the sat, returns current position
-    # Note this is technically an impulse,
-    # as it will only be applied for the next update
-    def write_impulse(self, twist_msg, time_step):
-        self.logger.debug("Writing twist")
-        xs = twist_msg.f_x * time_step
-        ys= twist_msg.f_y * time_step
-        taus = twist_msg.tau * time_step
-
+    def cmd_vel_and_servo(self, cmd_vel, servo_states):
+        """ Writes desired velocity and servo states """
+        self.logger.debug("Writing vel and servo")
         
-        sendString = "twist %.2f %.2f %.2f\n" % (xs, ys, taus)
+        sendString = "ctl %.2f %.2f %.2f" % (cmd_vel.x, cmd_vel.y, cmd_vel.omega)
+        sendString += "%.2f %.2f %.2f\n" % (servo_states.servo1, servo_states.servo2, servo_states.servo3)
 
         # Flush input, output, then send string
         try:
@@ -133,26 +145,47 @@ class SatComms:
         except Exception as e:
             print(e)
 
-    # Writes an absolute position update to the sat
-    def write_pos_update(self, pose_msg):
-        self.logger.debug("Writing pos update")
-        x = pose_msg.x
-        y = pose_msg.y
-        theta = pose_msg.theta
-
-        # Position update string
-        sendString = "pos %.2f %.2f %.2f\n" % (x, y, theta)
-
-        # Flush input, output, then send string
+    def update_odom_frame(self):
+        """ Updates odometry frame """
         try:
-            self.ser.flushInput()
-            self.ser.flushOutput()
-            self.ser.write(bytes(sendString, "utf-8"))
+            # Requests odom frame
+            self.ser.write(bytes("odom\n", "utf-8"))
+
+            # Recives and parses the odometry frame
+            odom_frame = self.ser.readline()
+            odom_frame = odom_frame.split(" ")
+            odom_frame = [float(num) for num in odom_frame]
+
+            self.odom_frame.x = odom_frame[0]
+            self.odom_frame.y = odom_frame[1]
+            self.odom_frame.theta = odom_frame[2]
         except Exception as e:
             print(e)
+
+    # Updates odometry offset
+    def update_odom_offset(self, absolute_pose):
+        """ Updates the odometry offset """
+
+        # If sat not read correctly, do not update offset
+        if(not absolute_pose.x < 1000):
+            # For IIR filtering
+            # Over time, position will converge to absolut readings
+            # But short term is goverend by odometry
+            linear_filter_const = 0.5
+            angular_filter_const = 0.5
+
+            self.offset_frame.x += (self.odom_frame.x - absolute_pose.x + self.offset_frame.x) * linear_filter_const
+            self.offset_frame.y += (self.odom_frame.x - absolute_pose.y + self.offset_frame.y) * linear_filter_const
+            self.offset_frame.theta += (self.odom_frame.theta - absolute_pose.theta + self.offset_frame.theta) * angular_filter_const
+        
+        # Update sat frame
+        self.sat_frame.x = self.odom_frame.x + self.offset_frame.x
+        self.sat_frame.y = self.odom_frame.y + self.offset_frame.y
+        self.sat_frame.theta = self.odom_frame.theta + self.offset_frame.theta
 
     # Write a reset message to the sat
     def write_reset(self):
+        """Write a reset message to the sat"""
         self.logger.debug("Writing pos update")
 
         # Flush input, output, then send string
