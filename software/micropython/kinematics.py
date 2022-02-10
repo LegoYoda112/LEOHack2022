@@ -18,18 +18,43 @@ invJ = [[-22.2222, 0.0, 1.94444],
 class Kinematics():
     def __init__(self):
         self.x = 0
+        self.vel_x = 0
         self.y = 0
+        self.vel_y = 0
         self.theta = 0
+        self.omega = 0
         self.m = Motors()
 
 
-    def twistVel(self, x, y, theta):
-        x = x/1000.0 # mm/s
-        y = y/1000.0 # mm/s
+    def twistVel(self, x, y, omega):
+        x = x # m/s
+        y = y # m/s
         
-        motor1 = x * invJ[0][0] + y * invJ[0][1] + theta * invJ[0][2]
-        motor2 = x * invJ[1][0] + y * invJ[1][1] + theta * invJ[1][2]
-        motor3 = x * invJ[2][0] + y * invJ[2][1] + theta * invJ[2][2]
+        # print("here")
+        
+        Kx = 0.02 # X velocity constnat
+        Kxff = 0.3
+        
+        Ky = 0.02 # Y velocity constant
+        Kyff = 0.3
+        
+        Ko = 0.05 # Z
+        Koff = 0.3
+        
+        # Run simple proportinal controller
+        x_pow = Kx * (x - self.vel_x) + x * Kxff
+        y_pow = Ky * (y - self.vel_y) + y * Kyff
+        theta_pow = Ko * (omega - self.omega) + omega * Koff
+        
+        print(self.omega)
+        
+        #x_pow = x
+        #y_pow = y
+        #theta_pow = omega
+        
+        motor1 = x_pow * invJ[0][0] + y_pow * invJ[0][1] + theta_pow * invJ[0][2]
+        motor2 = x_pow * invJ[1][0] + y_pow * invJ[1][1] + theta_pow * invJ[1][2]
+        motor3 = x_pow * invJ[2][0] + y_pow * invJ[2][1] + theta_pow * invJ[2][2]
         
         #print(motor1)
         #print(motor2)
@@ -50,14 +75,15 @@ class Kinematics():
         q_2 = self.m.motor2.encoder.getVelRot(dt)
         q_3 = self.m.motor3.encoder.getVelRot(dt)
         
-        vel_x = q_1 * J[0][0] + q_2 * J[0][1] + q_3 * J[0][2]
-        vel_y = q_1 * J[1][0] + q_2 * J[1][1] + q_3 * J[1][2]
-        omega = q_1 * J[2][0] + q_2 * J[2][1] + q_3 * J[2][2]
+        self.vel_x = q_1 * J[0][0] + q_2 * J[0][1] + q_3 * J[0][2]
+        self.vel_y = q_1 * J[1][0] + q_2 * J[1][1] + q_3 * J[1][2]
+        self.omega = q_1 * J[2][0] + q_2 * J[2][1] + q_3 * J[2][2]
         
-        dx = vel_x * dt
-        dy = vel_y * dt
+        dx = self.vel_x * dt
+        dy = self.vel_y * dt
         
         self.x += dx * cos(self.theta) + dy * sin(self.theta) 
         self.y += dx * sin(self.theta) - dy * cos(self.theta)
-        self.theta += omega * dt
+        self.theta += self.omega * dt
+
 

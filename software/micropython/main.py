@@ -36,7 +36,7 @@ while True:
     start_ticks = time.ticks_ms()
     
     try:
-        while sys.stdin in select.select([sys.stdin], [], [], 0)[0]:        
+        while sys.stdin in select.select([sys.stdin], [], [], 0)[0]:
             line = sys.stdin.readline()
             if(line == '\n'):
                 break
@@ -48,6 +48,7 @@ while True:
                 x = float(values[0])
                 y = float(values[1])
                 theta = float(values[2])
+                
                 
                 print(k.x, k.y, k.theta)
                 
@@ -64,16 +65,18 @@ while True:
         # Error!
         led3.on()
     
-    k.twistVelAbsolute(x_vel, y_vel, omega)
+    k.twistVel(x_vel, y_vel, omega)
     k.updateOdom(period_s)
     
-    #print(k.x)
-    #print(k.y)
-    #print(k.theta)
-    #print()
+    # print(k.x)
+    # print(k.vel_x)
+    # print(k.y)
+    # print(k.theta)
+    # print()
         
     # Calculate how long code took to run and sleep remaining time
     end_ticks = time.ticks_ms()
     time_taken = time.ticks_diff(end_ticks, start_ticks)
     
     time.sleep(period_s - time_taken / 1000.0)
+

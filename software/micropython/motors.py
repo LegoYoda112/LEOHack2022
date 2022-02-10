@@ -40,8 +40,8 @@ class Motor:
         self.pin_A_pwm = machine.PWM(self.pin_A)
         self.pin_B_pwm = machine.PWM(self.pin_B)
         
-        self.pin_A_pwm.freq(100000)
-        self.pin_B_pwm.freq(100000)
+        self.pin_A_pwm.freq(1 * 1000)
+        self.pin_B_pwm.freq(1 * 1000)
         
         self.has_dir = has_dir
     
@@ -58,16 +58,17 @@ class Motor:
             
             power = abs(power)
 
-            self.pwm.duty_u16(int(power * 65536.0))
+            self.pwm.duty_u16(int(power * 62536.0))
             
         else:
-            print(power)
+            # print(power)
             if(power > 0):
-                self.pin_A_pwm.duty_u16(0)
-                self.pin_B_pwm.duty_u16(int(abs(power) * 65536.0))
-            else:
-                self.pin_A_pwm.duty_u16(int(abs(power) * 65536.0))
+                # self.pin
+                self.pin_A_pwm.duty_u16(int(abs((power)) * 63536))
                 self.pin_B_pwm.duty_u16(0)
+            else:
+                self.pin_B_pwm.duty_u16(int(abs(power) * 63536))
+                self.pin_A_pwm.duty_u16(0)
                 
 
 class Motors:
@@ -81,4 +82,5 @@ class Motors:
         self.motor3 = Motor(8, 7)
         self.motor3.setEncoder(18, 17)
        
+
 
