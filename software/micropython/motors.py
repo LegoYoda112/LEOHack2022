@@ -62,6 +62,7 @@ class Motor:
             
         else:
             # print(power)
+            
             if(power > 0):
                 # self.pin
                 self.pin_A_pwm.duty_u16(int(abs((power)) * 63536))

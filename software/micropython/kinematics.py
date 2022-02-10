@@ -46,7 +46,7 @@ class Kinematics():
         y_pow = Ky * (y - self.vel_y) + y * Kyff
         theta_pow = Ko * (omega - self.omega) + omega * Koff
         
-        print(self.omega)
+        # print(self.omega)
         
         #x_pow = x
         #y_pow = y

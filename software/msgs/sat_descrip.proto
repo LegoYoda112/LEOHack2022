@@ -110,7 +110,9 @@ message ControlMessage {
     // Absolute pose read by the camera system
     Pose2D absolute_pose = 3;
 
+    ServoStates servo_states = 4;
+
     // Control loop period
     // for providing accurate impulse control
-    float time_step = 4;
+    float time_step = 5;
 }

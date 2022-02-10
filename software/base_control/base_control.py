@@ -26,6 +26,8 @@ class BaseControl:
 
         self.context = zmq.Context()
 
+        self.sat_state = sat_msgs.SataliteState()
+
         # Make a thread lock to prevent multiple threads from
         # accessing the socket at the same time
         self.comms_lock = threading.Lock()
@@ -38,10 +40,10 @@ class BaseControl:
 
     def send_msg(self, msg, data):
         """ Sends a byte message to the sat, msg must be 3 characters long """
-        print()
+        # print()
 
         if isinstance(data, bytes):
-            print(data)
+            # print(data)
             self.send_socket.send(msg.encode("utf-8") + data)
         else:
             self.send_socket.send(msg.encode("utf-8") + data.encode("utf-8"))
@@ -66,7 +68,7 @@ class BaseControl:
             print("Connection Failed")
             self.send_socket.close()
 
-            raise Exception("No satalite at ip")
+            # raise Exception("No satalite at ip")
 
             return (False, "")
 
@@ -99,7 +101,7 @@ class BaseControl:
         self.comms_lock.release()
 
         # Debug, 
-        print(len(events))
+        # print(len(events))
 
         if(len(events) == 0):
             print("Connection Failed")
@@ -135,15 +137,12 @@ class BaseControl:
 
         self.send_msg("CTL", control_message.SerializeToString())
 
-        state_msg = sat_msgs.SataliteState()
         rcv_msg = self.send_socket.recv()
-        state_msg.ParseFromString(rcv_msg)
-
-        print(state_msg)
+        self.sat_state.ParseFromString(rcv_msg)
 
         t1 = time.time()
 
-        print("Round trip time", round((t1 - t0) * 1000), "ms")
+        # print("Round trip time", round((t1 - t0) * 1000), "ms")
 
         # print(" ==== Control unlock")
         self.comms_lock.release()

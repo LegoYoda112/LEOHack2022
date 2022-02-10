@@ -43,14 +43,17 @@ while True:
             
             values = line.split()
         
-            if(len(values) == 3):
-                led1.on()
-                x = float(values[0])
-                y = float(values[1])
-                theta = float(values[2])
-                
-                
-                print(k.x, k.y, k.theta)
+            
+            led1.on()
+            
+            cmd = values[0]
+            if(cmd == "odom"):
+                print("%0.3f %0.3f %0.3f %0.3f %0.3f %0.3f\n" % (k.x, k.y, k.theta, k.vel_x, k.vel_y, k.omega))
+            
+            elif(cmd == "ctl"):
+                x = float(values[1])
+                y = float(values[2])
+                theta = float(values[3])
                 
                 x_vel = x
                 y_vel = y
