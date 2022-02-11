@@ -5,10 +5,13 @@ from math import sqrt, sin, cos
 robot_radius = 67.4 / 100.0 # m
 wheel_dia = 80.0 / 1000.0 # m
 
-J3 = wheel_dia / robot_radius 
+J3 = -wheel_dia / robot_radius
 
-J = [[-0.03, 0.015, 0.015],
-     [0.0, -0.0259808, 0.0259808],
+x_scale = 1.42
+y_scale = x_scale
+
+J = [[-0.03 * x_scale, 0.015 * x_scale, 0.015 * x_scale],
+     [0.0, 0.0259808 * y_scale, -0.0259808 * y_scale],
      [J3, J3, J3]]
 
 invJ = [[-22.2222, 0.0, 1.94444],
@@ -65,8 +68,8 @@ class Kinematics():
         self.m.motor3.setPower(motor3)
         
     def twistVelAbsolute(self, x, y, omega):
-        abs_x = x * cos(self.theta) - y * sin(self.theta)
-        abs_y = x * sin(self.theta) + y * cos(self.theta)
+        abs_x = x * cos(-self.theta) - y * sin(-self.theta)
+        abs_y = x * sin(-self.theta) + y * cos(-self.theta)
         
         self.twistVel(-abs_x, -abs_y, omega)
 
@@ -85,5 +88,6 @@ class Kinematics():
         self.x += dx * cos(self.theta) + dy * sin(self.theta) 
         self.y += dx * sin(self.theta) - dy * cos(self.theta)
         self.theta += self.omega * dt
+
 
 

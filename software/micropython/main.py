@@ -49,7 +49,10 @@ while True:
             cmd = values[0]
             if(cmd == "odom"):
                 print("%0.3f %0.3f %0.3f %0.3f %0.3f %0.3f\n" % (k.x, k.y, k.theta, k.vel_x, k.vel_y, k.omega))
-            
+                
+            elif(cmd == "theta"):
+                k.theta = -float(values[1])
+                
             elif(cmd == "ctl"):
                 x = float(values[1])
                 y = float(values[2])
@@ -82,4 +85,5 @@ while True:
     time_taken = time.ticks_diff(end_ticks, start_ticks)
     
     time.sleep(period_s - time_taken / 1000.0)
+
 

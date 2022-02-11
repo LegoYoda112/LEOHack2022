@@ -1,3 +1,4 @@
+from re import I
 import time
 import threading
 
@@ -7,6 +8,8 @@ import sys
 sys.path.append("../msgs/")
 sys.path.append("software/msgs/")
 import sat_descrip_pb2 as sat_msgs
+
+from marker_tracking import MarkerTracking
 
 class SatConnection:
     """ Stores sat connection information """
@@ -31,6 +34,13 @@ class BaseControl:
         # Make a thread lock to prevent multiple threads from
         # accessing the socket at the same time
         self.comms_lock = threading.Lock()
+
+        # Marker tracking thread
+        self.tracker = MarkerTracking()
+
+    def start_tracking(self):
+        """ Starts the tag tracking """
+        self.tracker.start()
 
     def connect_socket(self, ip, port):
         """ Connects to specified socket """
@@ -134,6 +144,11 @@ class BaseControl:
 
         t0 = time.time()
 
+        # Add in the absolute read pose
+        abs_pose = self.tracker.markers['live']
+        
+        if abs_pose is not None:
+            control_message.absolute_pose.CopyFrom(self.tracker.markers['live'])
 
         self.send_msg("CTL", control_message.SerializeToString())
 

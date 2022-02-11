@@ -130,14 +130,18 @@ class SatComms:
     def receive_control(self, message):
         """ Handle control message """
         self.logger.debug("Received RUN: ")
+        print("recived control")
 
         ctl_msg = sat_msgs.ControlMessage()
         ctl_msg.ParseFromString(message)
         # print(ctl_msg)
 
+        # print("updating odom")
         # Update odometry
         self.update_odom_frame()
         self.update_odom_offset(ctl_msg.absolute_pose)
+
+        print(ctl_msg.absolute_pose)
 
         thrust = ctl_msg.thrust
         time_step = ctl_msg.time_step
@@ -183,7 +187,7 @@ class SatComms:
         try:
             self.ser.flushInput()
             # Requests odom frame
-            self.ser.write(bytes("odom\n", "utf-8"))
+            self.ser.write(bytes("odom %0.3f\n" % (self.sat_frame.theta), "utf-8"))
 
             # Recives and parses the odometry frame
             # odom_frame = self.ser.readline()
@@ -217,21 +221,29 @@ class SatComms:
         """ Updates the odometry offset """
 
         # If sat not read correctly, do not update offset
-        if(not absolute_pose.x < 1000):
+        if((absolute_pose.x != 0 and absolute_pose.y != 0)):
+            # print("recived abs pose")
             # For IIR filtering
             # Over time, position will converge to absolut readings
             # But short term is goverend by odometry
-            linear_filter_const = 0.5
-            angular_filter_const = 0.5
+            linear_filter_const = -0.5
+            angular_filter_const = -0.5
 
-            self.offset_frame.x += (self.odom_frame.x - absolute_pose.x + self.offset_frame.x) * linear_filter_const
-            self.offset_frame.y += (self.odom_frame.x - absolute_pose.y + self.offset_frame.y) * linear_filter_const
-            self.offset_frame.theta += (self.odom_frame.theta - absolute_pose.theta + self.offset_frame.theta) * angular_filter_const
+            self.offset_frame.x += (self.sat_frame.x - absolute_pose.x) * linear_filter_const
+            self.offset_frame.y += (self.sat_frame.y - absolute_pose.y) * linear_filter_const
+            self.offset_frame.theta += (self.sat_frame.theta - absolute_pose.theta) * angular_filter_const
+            print(self.offset_frame.theta)
         
         # Update sat frame
         self.sat_frame.x = self.odom_frame.x + self.offset_frame.x
         self.sat_frame.y = self.odom_frame.y + self.offset_frame.y
         self.sat_frame.theta = self.odom_frame.theta + self.offset_frame.theta
+
+        # If sat not read correctly, do not update offset
+        if((absolute_pose.x != 0 and absolute_pose.y != 0)):
+            self.ser.flushInput()
+            # Set odom theta to be updated
+            self.ser.write(bytes("theta %0.3f\n" % (self.sat_frame.theta), "utf-8"))
 
     # Write a reset message to the sat
     def write_reset(self):
