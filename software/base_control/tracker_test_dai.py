@@ -1,5 +1,6 @@
 import cv2
 import depthai as dai
+import time
 import numpy as np
 
 from marker_tracking import MarkerTracking
@@ -37,10 +38,10 @@ with dai.Device(pipeline, usb2Mode = True) as device:
     calibData = device.readCalibration()
 
     M_rgb, width, height = calibData.getDefaultIntrinsics(dai.CameraBoardSocket.RGB)
-    M_rgb = np.array(M_rgb)
-    print(M_rgb / 2)
-    print(width / 2)
-    print(height / 2)
+    M_rgb = np.array(M_rgb) / 2
+    # print(M_rgb / 2)
+    # print(width / 2)
+    # print(height / 2)
 
     D_rgb = calibData.getDistortionCoefficients(dai.CameraBoardSocket.RGB)
     print(D_rgb)
@@ -53,7 +54,7 @@ with dai.Device(pipeline, usb2Mode = True) as device:
         videoIn = video.get()
 
         frame = videoIn.getCvFrame()
-        frame = tracker.get_markers(frame)
+        frame, markers = tracker.get_markers(frame)
 
         cv2.imshow("video", frame)
 
