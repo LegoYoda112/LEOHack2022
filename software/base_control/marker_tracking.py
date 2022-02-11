@@ -31,7 +31,7 @@ class MarkerTracking:
         self.sat_pose = False
         self.good_sat_reading = False
 
-        self.dead_sat_pose = False
+        self.dead_sat_pose = sat_msgs.Pose2D()
 
         # Create dictionary and paremters
         self.aruco_dict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_1000)
@@ -126,7 +126,7 @@ class MarkerTracking:
 
                     marker_pose = sat_msgs.Pose2D()
 
-                    marker_pose.x = translation_x
+                    marker_pose.x = -translation_x
                     marker_pose.y = -translation_z
                     marker_pose.theta = -pitch_y + 3.1415/2
                     
@@ -157,6 +157,7 @@ class MarkerTracking:
                     #         0.5, (0, 255, 0), 2)
 
         ret_markers = {}
+        # print(markers)
         if(self.live_id in markers):
             ret_markers['live'] = markers[self.live_id]
         else:

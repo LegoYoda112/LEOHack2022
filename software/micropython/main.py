@@ -14,7 +14,7 @@ from kinematics import Kinematics
 
 # micropython.kbd_intr(-1)
 
-led0.on()
+led0.off()
 led1.off()
 led2.off()
 led3.off()
@@ -51,12 +51,14 @@ while True:
                 print("%0.3f %0.3f %0.3f %0.3f %0.3f %0.3f\n" % (k.x, k.y, k.theta, k.vel_x, k.vel_y, k.omega))
                 
             elif(cmd == "theta"):
-                k.theta = -float(values[1])
+                k.theta = float(values[1])
                 
             elif(cmd == "ctl"):
                 x = float(values[1])
                 y = float(values[2])
-                theta = float(values[3])
+                theta = -float(values[3])
+                
+                # print("%0.3f %0.3f %0.3f" % (x, y, theta))
                 
                 x_vel = x
                 y_vel = y
@@ -71,7 +73,7 @@ while True:
         # Error!
         led3.on()
     
-    k.twistVel(x_vel, y_vel, omega)
+    k.twistVelAbsolute(x_vel, y_vel, omega)
     k.updateOdom(period_s)
     
     # print(k.x)

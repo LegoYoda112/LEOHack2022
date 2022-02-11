@@ -6,6 +6,16 @@ import math
 import micropython
 micropython.alloc_emergency_exception_buf(100)
 
+class Servo():
+    def __init__(self, pin_num):
+        self.pin = Pin(pin_num)
+        self.servo_pwm = machine.PWM(self.pin)
+        self.servo_pwm.freq(50)
+        
+    def moveTo(self, travel):
+        self.servo_pwm.duty_u16(int(2100 + travel * 5600))
+    
+
 class Encoder():
     def __init__(self, pinA, pinB, rev = False):
         self.pinA = Pin(pinA, Pin.IN, Pin.PULL_DOWN)
@@ -82,6 +92,11 @@ class Motors:
         
         self.motor3 = Motor(8, 7)
         self.motor3.setEncoder(18, 17)
+        
+        self.servo1 = Servo(10)
+        self.servo2 = Servo(11)
+        self.servo3 = Servo(12)
        
+
 
 

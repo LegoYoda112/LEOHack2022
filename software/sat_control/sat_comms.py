@@ -45,7 +45,7 @@ class SatComms:
     def start(self, serial_name):
         """ Starts the sat communication """
         # Set up serial port and connect
-        self.ser = serial.Serial(serial_name, 115200, write_timeout = 0.001)
+        self.ser = serial.Serial(serial_name, 115200, write_timeout = 0.05)
 
         # Create the comms thread
         self.thread = threading.Thread(target= self.comms_thread, args = ())
@@ -130,7 +130,7 @@ class SatComms:
     def receive_control(self, message):
         """ Handle control message """
         self.logger.debug("Received RUN: ")
-        print("recived control")
+        # print("recived control")
 
         ctl_msg = sat_msgs.ControlMessage()
         ctl_msg.ParseFromString(message)
@@ -148,11 +148,13 @@ class SatComms:
         # servo_states = ctl_msg.servo_states
 
         # Update 
-        self.global_sat_vel.v_x += thrust.f_x * time_step
-        self.global_sat_vel.v_y += thrust.f_y * time_step
-        self.global_sat_vel.omega += thrust.tau * time_step
+        #self.global_sat_vel.v_x += thrust.f_x * time_step
+        #self.global_sat_vel.v_y += thrust.f_y * time_step
+        #self.global_sat_vel.omega += thrust.tau * time_step
 
-        # print(self.global_sat_vel.v_x)
+        self.global_sat_vel.v_x = thrust.f_x
+        self.global_sat_vel.v_y = thrust.f_y
+        self.global_sat_vel.omega = thrust.tau
 
         self.cmd_vel_and_servo(self.global_sat_vel, None)
 
@@ -168,9 +170,9 @@ class SatComms:
         """ Writes desired velocity and servo states """
         self.logger.debug("Writing vel and servo")
         
-        send_string = "ctl %.3f %.3f %.2f" % (cmd_vel.v_x, cmd_vel.v_y, cmd_vel.omega)
+        send_string = "ctl %.3f %.3f %.3f" % (cmd_vel.v_x, cmd_vel.v_y, cmd_vel.omega)
         #send_string += "%.2f %.2f %.2f\n" % (servo_states.servo1, servo_states.servo2, servo_states.servo3)
-        send_string += "0 0 0\n"
+        send_string += " 0 0 0 \n"
 
         print(send_string)
 
@@ -191,7 +193,9 @@ class SatComms:
 
             # Recives and parses the odometry frame
             # odom_frame = self.ser.readline()
+            print("reading odom")
             odom_frame = self.ser.readline().decode("utf-8")
+            print("read odom")
             # print(str(odom_frame))
 
             #odom_frame = self.ser.readline()
@@ -226,22 +230,25 @@ class SatComms:
             # For IIR filtering
             # Over time, position will converge to absolut readings
             # But short term is goverend by odometry
-            linear_filter_const = -0.5
-            angular_filter_const = -0.5
+            linear_filter_const = -1
+            angular_filter_const = -1
 
             self.offset_frame.x += (self.sat_frame.x - absolute_pose.x) * linear_filter_const
             self.offset_frame.y += (self.sat_frame.y - absolute_pose.y) * linear_filter_const
             self.offset_frame.theta += (self.sat_frame.theta - absolute_pose.theta) * angular_filter_const
-            print(self.offset_frame.theta)
+
+            self.sat_frame.x =  absolute_pose.x
+            self.sat_frame.y =  absolute_pose.y
+            self.sat_frame.theta = absolute_pose.theta
         
         # Update sat frame
-        self.sat_frame.x = self.odom_frame.x + self.offset_frame.x
-        self.sat_frame.y = self.odom_frame.y + self.offset_frame.y
-        self.sat_frame.theta = self.odom_frame.theta + self.offset_frame.theta
+        #self.sat_frame.x = self.odom_frame.x + self.offset_frame.x
+        # self.sat_frame.y = self.odom_frame.y + self.offset_frame.y
+        # self.sat_frame.theta = self.odom_frame.theta + self.offset_frame.theta
 
         # If sat not read correctly, do not update offset
         if((absolute_pose.x != 0 and absolute_pose.y != 0)):
-            self.ser.flushInput()
+            # self.ser.flushInput()
             # Set odom theta to be updated
             self.ser.write(bytes("theta %0.3f\n" % (self.sat_frame.theta), "utf-8"))
 

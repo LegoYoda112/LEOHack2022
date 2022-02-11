@@ -68,8 +68,8 @@ class Kinematics():
         self.m.motor3.setPower(motor3)
         
     def twistVelAbsolute(self, x, y, omega):
-        abs_x = x * cos(-self.theta) - y * sin(-self.theta)
-        abs_y = x * sin(-self.theta) + y * cos(-self.theta)
+        abs_x = x * cos(self.theta) - y * sin(self.theta)
+        abs_y = x * sin(self.theta) + y * cos(self.theta)
         
         self.twistVel(-abs_x, -abs_y, omega)
 
@@ -79,14 +79,14 @@ class Kinematics():
         q_3 = self.m.motor3.encoder.getVelRot(dt)
         
         self.vel_x = q_1 * J[0][0] + q_2 * J[0][1] + q_3 * J[0][2]
-        self.vel_y = q_1 * J[1][0] + q_2 * J[1][1] + q_3 * J[1][2]
+        self.vel_y = -(q_1 * J[1][0] + q_2 * J[1][1] + q_3 * J[1][2])
         self.omega = q_1 * J[2][0] + q_2 * J[2][1] + q_3 * J[2][2]
         
         dx = self.vel_x * dt
         dy = self.vel_y * dt
         
-        self.x += dx * cos(self.theta) + dy * sin(self.theta) 
-        self.y += dx * sin(self.theta) - dy * cos(self.theta)
+        self.x += dx * cos(self.theta) - dy * sin(self.theta) 
+        self.y += dx * sin(self.theta) + dy * cos(self.theta)
         self.theta += self.omega * dt
 
 

@@ -7,7 +7,9 @@ import zmq
 import sys
 sys.path.append("../msgs/")
 sys.path.append("software/msgs/")
+sys.path.append("../sat_control/")
 import sat_descrip_pb2 as sat_msgs
+from team_controller import TeamController
 
 from marker_tracking import MarkerTracking
 
@@ -30,6 +32,7 @@ class BaseControl:
         self.context = zmq.Context()
 
         self.sat_state = sat_msgs.SataliteState()
+        self.dead_sat_state = sat_msgs.SataliteState()
 
         # Make a thread lock to prevent multiple threads from
         # accessing the socket at the same time
@@ -37,6 +40,9 @@ class BaseControl:
 
         # Marker tracking thread
         self.tracker = MarkerTracking()
+
+        # System state message
+        self.system_state = sat_msgs.SystemState()
 
     def start_tracking(self):
         """ Starts the tag tracking """
@@ -136,6 +142,10 @@ class BaseControl:
         # Create the heartbeat threat and start it
         self.heartbeat_thread = threading.Thread(target = self.heartbeat, args=(), daemon = True)
         self.heartbeat_thread.start()
+
+    def update(self):
+        """Run periodically in your control loop"""
+        self.dead_sat_state.pose.CopyFrom(self.tracker.markers['dead'])
 
     def send_control(self, control_message):
         """ Sends control message """
