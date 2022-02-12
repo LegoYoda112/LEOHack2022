@@ -1,3 +1,5 @@
+import math
+
 from sat_controller import SatControllerInterface, sat_msgs
 
 # Team code is written as an implementation of various methods
@@ -33,6 +35,8 @@ class TeamController(SatControllerInterface):
         """ Takes in a system state, satellite state """
 
         print(dead_sat_state)
+        print(satellite_state)
+        print(satellite_state.fuel)
 
         # Get timedelta from elapsed time
         elapsed_time = system_state.elapsedTime.ToTimedelta()
@@ -48,8 +52,9 @@ class TeamController(SatControllerInterface):
         control_message = sat_msgs.ControlMessage()
 
         # Set thrust command values, basic PD controller that drives the sat to [0, -1]
-        control_message.thrust.f_x = -2.0 * (satellite_state.pose.x - (0)) - 3.0 * satellite_state.twist.v_x
-        control_message.thrust.f_y = -2.0 * (satellite_state.pose.y - (-1)) - 3.0 * satellite_state.twist.v_y
+        control_message.thrust.f_x = -2.0 * (satellite_state.pose.x - (1.2)) - 3.0 * satellite_state.twist.v_x
+        control_message.thrust.f_y = -2.0 * (satellite_state.pose.y - (-2)) - 3.0 * satellite_state.twist.v_y
+        control_message.thrust.tau = -2.0 * (satellite_state.pose.theta - (dead_sat_state.pose.theta) - (math.pi/3)) - 3.0 * satellite_state.twist.omega
 
         # Return control message
         return control_message
