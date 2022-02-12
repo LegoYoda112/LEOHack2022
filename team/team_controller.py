@@ -29,7 +29,7 @@ class TeamController(SatControllerInterface):
         # Return team info
         return team_info
 
-    def team_run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState, dead_sat_state: sat_msgs.SataliteState) -> sat_msgs.ControlMessage:
+    def team_run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SatelliteState, dead_sat_state: sat_msgs.SatelliteState) -> sat_msgs.ControlMessage:
         """ Takes in a system state, satellite state """
 
         print(dead_sat_state)

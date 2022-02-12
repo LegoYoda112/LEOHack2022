@@ -11,9 +11,9 @@ package LEOHack;
 // =============== INFO MESSAGES ===============
 // Location + orientation
 // Used for:
-// - Absolute pose of team satalite to base station
-// - Absolute pose of dead satalite to base station
-// - Relative pose of team satalite to dead satalite
+// - Absolute pose of team satellite to base station
+// - Absolute pose of dead satellite to base station
+// - Relative pose of team satellite to dead satellite
 message Pose2D {
     float x = 1; // in meters
     float y = 2; // in meters
@@ -48,8 +48,8 @@ message ServoStates{
     float servo3 = 3;
 }
 
-// Satalite description
-// Sent during first connect and handshakes with satalite and team code
+// Satellite description
+// Sent during first connect and handshakes with satellite and team code
 // Defines name, team ID, thruster config, mass and inertia
 // !! MAKE SURE YOUR TEAM ID IS SET IN CODE, OTHERWISE SCORES WILL NOT BE COUNTED CORRECTLY !!
 message SatelliteDescription {
@@ -68,14 +68,14 @@ message SatelliteDescription {
 }
 
 // =============== STATE MESSAGES ===============
-// Satalite state
-// Reply from the satalite that contain
-message SataliteState {
+// satellite state
+// Reply from the satellite that contain
+message SatelliteState {
 
-    // Satalite location
+    // satellite location
     Pose2D pose = 3;
 
-    // Satalite velocity
+    // satellite velocity
     Twist2D twist = 4;
 
     // Used fuel (tracks impulse over time)
@@ -98,7 +98,7 @@ message SystemState {
     google.protobuf.Timestamp absoluteTime = 3;
 }
 
-// =============== SATTALITE COMMANDS ===============
+// =============== SATELLITE COMMANDS ===============
 
 message ControlMessage {
     // Wether or not to apply sent thrust commands

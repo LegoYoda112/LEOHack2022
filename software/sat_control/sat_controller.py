@@ -12,10 +12,10 @@ import logging
 import traceback
 
 # The sat controller class contains all the required information
-# to control and simulate a "satalite"
+# to control and simulate a "Satellite"
 
 # Teams will implement various functions of this class
-# to provide the control necessary to run the satalite
+# to provide the control necessary to run the Satellite
 
 class SatControllerInterface(ABC):
     """ Interface to build sat controllers on """
@@ -38,7 +38,7 @@ class SatControllerInterface(ABC):
     # ====================== ABSTRACT TEAM FUNCTIONS
     # Abstract run method, the team will implement this
     @abstractmethod
-    def team_run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState) -> sat_msgs.ControlMessage:
+    def team_run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SatelliteState) -> sat_msgs.ControlMessage:
         raise NotImplementedError
 
     # Abstract init method, the team will implement this
@@ -64,7 +64,7 @@ class SatControllerInterface(ABC):
 
         return team_info
 
-    def run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SataliteState, dead_sat_state: sat_msgs.SataliteState) -> sat_msgs.ControlMessage:
+    def run(self, system_state: sat_msgs.SystemState, satellite_state: sat_msgs.SatelliteState, dead_sat_state: sat_msgs.SatelliteState) -> sat_msgs.ControlMessage:
         try:
             thrust_cmd = self.team_run(system_state, satellite_state, dead_sat_state)
         except Exception as e:

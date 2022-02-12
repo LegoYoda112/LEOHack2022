@@ -70,8 +70,8 @@ class Sim():
 
         # Sim dt (seconds)
         self.dt = timestep
-        self.sat_state = sat_msgs.SataliteState()
-        self.dead_sat_state = sat_msgs.SataliteState()
+        self.sat_state = sat_msgs.SatelliteState()
+        self.dead_sat_state = sat_msgs.SatelliteState()
         self.system_state = sat_msgs.SystemState()
 
         # The start time of each sim run to calculate elapsed time
