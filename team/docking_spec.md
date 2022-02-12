@@ -3,14 +3,14 @@ To dock a live satellite to a dead one, we must make a rough approach to get to 
 
 
 ## Rough Approach
-With in orbit objects such as the ISS, a keepout sphere is defined for safety, any vehicle entering this sphere must adhere to velocity, proximity and other limits. In a real orbit, this procedure would be highly complex, consisting of raising the vehicles orbit, aligning velocity etc. In our 2D system, this is much simpler.
+In a real orbit, a long distance approach procedure would be highly complex, consisting of raising the vehicles orbit, aligning velocity etc. In our 2D system, this is much simpler, as we do not have to deal with orbital mechanics.
 
 | Item | value      |
 | ----- | ----- |
 | Max velocity | 1 m/s    |
 
 ## Final approach
-Once the vehicle has approached the edge of the keepout sphere, it can transition into a slower, final approach. This has a more restrictive set of requirements.
+With in orbit objects such as the ISS, a keepout sphere is defined for safety, any vehicle entering this sphere must adhere to velocity, proximity and other limits. Once the vehicle has approached the edge of the keepout sphere, it can transition into a slower, final approach. This has a more restrictive set of requirements.
 
 | Item | value      |
 | ----- | ----- |
