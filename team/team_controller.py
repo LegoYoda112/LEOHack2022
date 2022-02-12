@@ -66,16 +66,18 @@ class TeamController(SatControllerInterface):
             k_x = (math.e/2.03576)**2
             k_y = (math.e/-0.81430)**2
         else:
-            k_x = (0.2/(0.5-x_target))**2
-            k_y = (0.2/(0.5-y_target))**2
+            k_x = (0.2*math.e/(x_target-1.03576))**2
+            k_y = (0.2*math.e/(y_target-(-1.81430)))**2
 
         crit_damp_x = 2 * math.sqrt(self.sat_description.mass * k_x)
         crit_damp_y = 2 * math.sqrt(self.sat_description.mass * k_y)
 
         # Set thrust command values, basic PD controller that drives the sat to [0, -1]
-        control_message.thrust.f_x = -k_x * (satellite_state.pose.x - ((x_target-1.5)*2 + 1.5)) - crit_damp_x * satellite_state.twist.v_x
-        control_message.thrust.f_y = -k_y * (satellite_state.pose.y - ((y_target-(-2))*2 - 2)) - crit_damp_y * satellite_state.twist.v_y
+        control_message.thrust.f_x = -k_x * (satellite_state.pose.x - x_target) - crit_damp_x * satellite_state.twist.v_x
+        control_message.thrust.f_y = -k_y * (satellite_state.pose.y - y_target) - crit_damp_y * satellite_state.twist.v_y
         control_message.thrust.tau = -k_y * (satellite_state.pose.theta - (dead_sat_state.pose.theta) - (math.pi / 3)) - crit_damp_y * satellite_state.twist.omega
+
+        # (x_target-1.5)*2 + 1.5)
 
         # control_message.thrust.f_x = -k * (satellite_state.pose.x - (x_target)) - crit_damp * satellite_state.twist.v_x
         # control_message.thrust.f_y = -k * (satellite_state.pose.y - (y_target)) - crit_damp * satellite_state.twist.v_y
