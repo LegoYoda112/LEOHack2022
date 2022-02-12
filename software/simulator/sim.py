@@ -218,10 +218,8 @@ class Sim():
             docked = False
 
         # Check angular tolerance
-        if(theta_error < theta_tolerance):
-            self.logger.info("Passing angular tolerance!")
-        else:
-            docked = False
+        
+        
 
         # Draw target
         if(self.draw_targets):

@@ -6,6 +6,9 @@ from sat_controller import SatControllerInterface, sat_msgs
 
 # Specifically, init, run, and reset
 
+from math import sin, cos
+import math
+
 class TeamController(SatControllerInterface):
     """ Team control code """
 
@@ -48,9 +51,12 @@ class TeamController(SatControllerInterface):
         control_message = sat_msgs.ControlMessage()
 
         # Set thrust command values, basic PD controller that drives the sat to [0, -1]
-        control_message.thrust.f_x = -2.0 * (satellite_state.pose.x - (0)) - 3.0 * satellite_state.twist.v_x
-        control_message.thrust.f_y = -2.0 * (satellite_state.pose.y - (-1)) - 3.0 * satellite_state.twist.v_y
-
+        control_message.thrust.f_x = -2.0 * (satellite_state.pose.x - (dead_sat_state.pose.x+0.25*cos(dead_sat_state.pose.theta - math.pi / 2))) - 3.0 * satellite_state.twist.v_x
+        control_message.thrust.f_y = -2.0 * (satellite_state.pose.y - (dead_sat_state.pose.y+0.25*sin(dead_sat_state.pose.theta - math.pi / 2))) - 3.0 * satellite_state.twist.v_y
+        control_message.thrust.tau = -1.5 * (satellite_state.pose.theta - dead_sat_state.pose.theta) - 3.0 * satellite_state.twist.omega
+        #print(satellite_state.pose.x)
+        #print(satellite_state.pose.y)
+        #print(satellite_state.pose.theta)
         # Return control message
         return control_message
 
