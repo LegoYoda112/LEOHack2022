@@ -47,9 +47,9 @@ class TeamController(SatControllerInterface):
         # Create a thrust command message
         control_message = sat_msgs.ControlMessage()
 
-        # Set thrust command values
-        control_message.thrust.f_x = -2.0 * (satellite_state.pose.x - 1) - 3.0 * satellite_state.twist.v_x
-        control_message.thrust.f_y = -2.0 * (satellite_state.pose.y - 1) - 3.0 * satellite_state.twist.v_y
+        # Set thrust command values, basic PD controller that drives the sat to [0, -1]
+        control_message.thrust.f_x = -2.0 * (satellite_state.pose.x - (0)) - 3.0 * satellite_state.twist.v_x
+        control_message.thrust.f_y = -2.0 * (satellite_state.pose.y - (-1)) - 3.0 * satellite_state.twist.v_y
 
         # Return control message
         return control_message

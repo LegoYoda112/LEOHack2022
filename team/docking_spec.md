@@ -22,7 +22,8 @@ Once we are within a specified distance to the sat, we will considered it docked
 
 | Item | tolerance      |
 | ----- | ----- |
-|x-offset | +-0.01 m         |
-|y-offset | 0.1m +- 0.01 m   |
-|theta-offset | +-0.05 rads  |
+|x-offset | +-0.05 m         |
+|y-offset | 0.25m +- 0.02 m   |
+|theta-offset | +-0.1 rads (~6 degrees)  |
 |max velocity | 0.05 m/s     |
+|max angular velocity | 0.1 rads/s |

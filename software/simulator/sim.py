@@ -29,6 +29,9 @@ from google.protobuf.timestamp_pb2 import Timestamp
 
 from enum import Enum
 
+from math import sin, cos
+import math
+
 class SimState(Enum):
     """ Simulator state enum """
     STOPPED = 0
@@ -38,7 +41,7 @@ class SimState(Enum):
 class Sim():
     """Sat simulator"""
     
-    def __init__(self, logging_level, challange_level = 1, timestep = 0.05):
+    def __init__(self, logging_level, challenge_level = 1, timestep = 0.05):
         """Takes in logging level and constructs a sim object"""
 
         # Install colored logs :)
@@ -75,7 +78,9 @@ class Sim():
         self.start_time = None
 
         # Sets challange level (adjusts how dead sat operates)
-        self.challange_level = challange_level
+        self.challenge_level = challenge_level
+
+        self.draw_targets = True
 
         # Zero out all states
         self.reset()
@@ -86,11 +91,16 @@ class Sim():
         self.vis = meshcat.Visualizer()
         self.vis.open()
 
+        self.vis["/Background"].set_property("top_color", [0, 0, 0])
+
         # Add satellites
         self.vis["dead_sat"].set_object(g.ObjMeshGeometry.from_file("software/simulator/3d_assets/Base.obj"), g.MeshPhongMaterial(color = 0xDD6442, transparent = False, opacity=1))
         self.logger.debug("Added dead sat")
         self.vis["team_sat"].set_object(g.ObjMeshGeometry.from_file("software/simulator/3d_assets/Base.obj"), g.MeshPhongMaterial(color = 0x73BE63, transparent = False, opacity=1))
         self.logger.debug("Added team sat")
+
+        if(self.draw_targets):
+            self.vis['target'].set_object(g.Sphere(0.05), g.MeshPhongMaterial(color = 0x73BE63, transparent = True, opacity=0.2))
 
         self.logger.info("Meshcat started")
 
@@ -151,7 +161,7 @@ class Sim():
                 tf.translation_matrix([
                     self.sat_state.pose.x, 
                     self.sat_state.pose.y, 
-                    0]).dot(tf.rotation_matrix(self.sat_state.pose.theta, 
+                    0]).dot(tf.rotation_matrix(self.sat_state.pose.theta + math.pi / 2, 
                 [0, 0, 1])))
 
                 # Update visualizer
@@ -159,10 +169,15 @@ class Sim():
                 tf.translation_matrix([
                     self.dead_sat_state.pose.x, 
                     self.dead_sat_state.pose.y, 
-                    0]).dot(tf.rotation_matrix(self.dead_sat_state.pose.theta, 
+                    0]).dot(tf.rotation_matrix(self.dead_sat_state.pose.theta + math.pi / 2, 
                 [0, 0, 1])))
 
             self.logger.debug("Running thread")
+
+            # Check for docking
+            docked = self.check_for_docking()
+            if(docked):
+                self.logger.info("Congrats! You have docked.")
             
             # Release thread lock
             self.sim_thread_lock.release()
@@ -172,26 +187,94 @@ class Sim():
 
         self.logger.info("Simulation ended")
 
+    def check_for_docking(self):
+        """ Checks docking requirements """
+        docked = True
+
+        dead_x = self.dead_sat_state.pose.x
+        dead_y = self.dead_sat_state.pose.y
+        dead_theta = self.dead_sat_state.pose.theta
+
+        # Local offsets and tolerances
+        x_tolerance = 0.05
+
+        y_offset = 0.25
+        y_tolerance = 0.05
+
+        theta_tolerance = 0.1
+
+        # Global offsets
+        x_target = dead_x + y_offset * cos(dead_theta - math.pi / 2)
+        y_target = dead_y + y_offset * sin(dead_theta - math.pi / 2)
+
+        x_error = abs(self.sat_state.pose.x - x_target)
+        y_error = abs(self.sat_state.pose.y - y_target)
+        theta_error = abs(self.sat_state.pose.theta % math.pi - dead_theta % math.pi)
+
+        # Check position tolerance
+        if(x_error < x_tolerance and y_error < y_tolerance):
+            self.logger.info("Passing position tolerance!")
+        else:
+            docked = False
+
+        # Check angular tolerance
+        if(theta_error < theta_tolerance):
+            self.logger.info("Passing angular tolerance!")
+        else:
+            docked = False
+
+        # Draw target
+        if(self.draw_targets):
+            # Update visualizer
+            self.vis["target"].set_transform(
+                tf.translation_matrix([
+                    x_target, 
+                    y_target, 
+                    0]).dot(tf.rotation_matrix(0, 
+                [0, 0, 1])))
+
+        return docked
+
     def update_dead_sat_pose(self):
-        """ Updates the dead sat pose based on challange level """
+        """ Updates the dead sat pose based on challenge level """
 
         t = self.elapsed_time.total_seconds()
-
-        if(self.challange_level == 1):
+        
+        if(self.challenge_level == 0):
+            # LEVEL 0 = Stationary sat, no rotation
+            self.dead_sat_state.pose.x = 1
+            self.dead_sat_state.pose.y = -1
+            self.dead_sat_state.pose.theta = - math.pi / 2
+        elif(self.challenge_level == 1):
             # LEVEL 1 = Stationary sat
             self.dead_sat_state.pose.x = 1.5
-            self.dead_sat_state.pose.y = 2.0 
-            self.dead_sat_state.pose.theta = 0.5
-        elif(self.challange_level == 2):
+            self.dead_sat_state.pose.y = -2.0 
+            self.dead_sat_state.pose.theta = -1.8
+        elif(self.challenge_level == 2):
             # LEVEL 2 = Translating sat
-            self.dead_sat_state.pose.x = 0.5 + t * 0.01
-            self.dead_sat_state.pose.y = 0.2 + t * -0.02
-            self.dead_sat_state.pose.theta = -0.4
-        elif(self.challange_level == 3):
+            self.dead_sat_state.twist.v_x = 0.04
+            self.dead_sat_state.twist.v_y = -0.03
+            self.dead_sat_state.twist.omega = 0.0
+
+            self.dead_sat_state.pose.x = 0.5 + t * self.dead_sat_state.twist.v_x
+            self.dead_sat_state.pose.y = -1.2 + t * self.dead_sat_state.twist.v_y 
+            self.dead_sat_state.pose.theta = -0.3
+        elif(self.challenge_level == 3):
+            # LEVEL 2 = Translating sat
+            self.dead_sat_state.twist.omega = 0.2
+
+            self.dead_sat_state.pose.x = 0.2
+            self.dead_sat_state.pose.y = -2.0
+            self.dead_sat_state.pose.theta = -0.3 + t * self.dead_sat_state.twist.omega
+        elif(self.challenge_level == 4):
             # LEVEL 3 Translating and rotating sat
-            self.dead_sat_state.pose.x = 0.5 + t * 0.02
-            self.dead_sat_state.pose.y = 0.2 + t * -0.01
-            self.dead_sat_state.pose.theta = -0.4 + t * 0.05
+            self.dead_sat_state.twist.v_x = 0.02
+            self.dead_sat_state.twist.v_y = -0.01
+            self.dead_sat_state.twist.omega = 0.05
+
+            self.dead_sat_state.pose.x = 0.5 + t * self.dead_sat_state.twist.v_x
+            self.dead_sat_state.pose.y = -0.2 + t * self.dead_sat_state.twist.v_y
+            self.dead_sat_state.pose.theta = -0.4 + t * self.dead_sat_state.twist.omega
 
     def start(self):
         """ Starts the simulation """
@@ -259,22 +342,16 @@ class Sim():
         self.elapsed_time = datetime.timedelta(seconds=0)
 
         # Zero out the sat state
-        self.sat_state.pose.x = 0.0
-        self.sat_state.pose.y = 0.0
-        self.sat_state.pose.theta = 0.0
+        self.sat_state.pose.x = -1.0
+        self.sat_state.pose.y = -1.0
+        self.sat_state.pose.theta = math.pi / 2
 
         self.sat_state.twist.v_x = 0.0
         self.sat_state.twist.v_y = 0.0
         self.sat_state.twist.omega = 0.0
 
         # Init the dead sat state
-        self.dead_sat_state.pose.x = 2.0
-        self.dead_sat_state.pose.y = 4.0
-        self.dead_sat_state.pose.theta = -2.0
-
-        self.dead_sat_state.twist.v_x = 0.0
-        self.dead_sat_state.twist.v_y = 0.0
-        self.dead_sat_state.twist.omega = 0.0
+        self.update_dead_sat_pose()
 
         # Run team init code
         self.sat_controller.team_init()
