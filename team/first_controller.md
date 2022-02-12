@@ -1,7 +1,7 @@
 # Writing your first controller
-You will interact with the satellite by implementing a set of functions within the team controller file. A frame work is already written with inputs and outputs. Your challenge is to write out a controller that brings the live satellite in line with the dead satellite and docks them, we will define what "dock" means later.
+You will interact with the satellite by implementing a set of functions within the team controller file. Your challenge is to write a controller that brings the live satellite in line with the dead satellite and docks them, we will define what "dock" means later.
 
-For in-person participants, you will only worry about the "level 1" challenge, which contains a stationary dead satellite. Note that this 
+For in-person participants, you will only worry about the "level 1" challenge, which contains a stationary dead satellite.
 
 ## Interfaces
 We use [Google Protbuf](https://developers.google.com/protocol-buffers) to send information between the controller and satellite (both physical and simulated) these provide a standard set of type enforced interfaces and make it easier not to mess data up. The interfaces you will be dealing with are listed below
@@ -74,3 +74,5 @@ control_message.thrust.f_y = -2.0 * (satellite_state.pose.y - 1) - 3.0 * satelli
 
 return control_message
 ```
+
+The x force is set to be the inverse of the error between pose.x and 1, this "pulls" the sat towards 1, in the same way a spring does. In addition, an extra term is present that adds force inversely proportional to the speed, actively damping the movement (the faster it goes, the more this force will push back). The next line does the same, but for y force.

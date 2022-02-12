@@ -27,3 +27,5 @@ Once we are within a specified distance to the sat, we will considered it docked
 |theta-offset | +-0.1 rads (~6 degrees)  |
 |max velocity | 0.05 m/s     |
 |max angular velocity | 0.1 rads/s |
+
+The simulator will print out messages telling you which of the specs you have achieved.
