@@ -145,7 +145,7 @@ class SatComms:
 
         thrust = ctl_msg.thrust
         time_step = ctl_msg.time_step
-        # servo_states = ctl_msg.servo_states
+        servo_states = ctl_msg.servo_states
 
         # Update 
         #self.global_sat_vel.v_x += thrust.f_x * time_step
@@ -156,10 +156,10 @@ class SatComms:
         self.global_sat_vel.v_y = thrust.f_y
         self.global_sat_vel.omega = thrust.tau
 
-        self.cmd_vel_and_servo(self.global_sat_vel, None)
+        self.cmd_vel_and_servo(self.global_sat_vel, servo_states)
 
         # Make sat state message
-        sat_state = sat_msgs.SataliteState()
+        sat_state = sat_msgs.SatelliteState()
         sat_state.pose.CopyFrom(self.sat_frame)
         sat_state.twist.CopyFrom(self.global_sat_vel)
         
@@ -171,7 +171,7 @@ class SatComms:
         self.logger.debug("Writing vel and servo")
         
         send_string = "ctl %.3f %.3f %.3f" % (cmd_vel.v_x, cmd_vel.v_y, cmd_vel.omega)
-        send_string += "%.2f %.2f %.2f\n" % (servo_states.servo1, servo_states.servo2, servo_states.servo3)
+        send_string += " %.2f %.2f %.2f\n" % (servo_states.servo1, servo_states.servo2, servo_states.servo3)
         # send_string += " 0 0 0 \n"
 
         print(send_string)

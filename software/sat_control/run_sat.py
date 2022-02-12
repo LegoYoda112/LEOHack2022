@@ -7,4 +7,4 @@ print(f"Sat control started on {hostname}.local")
 print(socket.gethostbyname(hostname))
 
 comms = SatComms(hostname)
-comms.start("COM3")
+comms.start("COM5")

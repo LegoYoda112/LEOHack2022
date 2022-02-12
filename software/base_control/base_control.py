@@ -9,7 +9,6 @@ sys.path.append("../msgs/")
 sys.path.append("software/msgs/")
 sys.path.append("../sat_control/")
 import sat_descrip_pb2 as sat_msgs
-from team_controller import TeamController
 
 from marker_tracking import MarkerTracking
 
@@ -31,8 +30,8 @@ class BaseControl:
 
         self.context = zmq.Context()
 
-        self.sat_state = sat_msgs.SataliteState()
-        self.dead_sat_state = sat_msgs.SataliteState()
+        self.sat_state = sat_msgs.SatelliteState()
+        self.dead_sat_state = sat_msgs.SatelliteState()
 
         # Make a thread lock to prevent multiple threads from
         # accessing the socket at the same time

@@ -1,17 +1,17 @@
 
 import time
-from base_control import BaseControl, sat_msgs, TeamController
+from base_control import BaseControl, sat_msgs
 
 ctl = BaseControl("Test")
 
 # ctl.connect_sat("localhost", 9000)
-ctl.connect_sat("192.168.17.13", 9000)
+ctl.connect_sat("odo.local", 9000)
 
 ctl.start_tracking()
 ctl.start_heartbeat()
 
-team_ctl = TeamController()
-team_ctl.init()
+#team_ctl = TeamController()
+#team_ctl.init()
 
 input("Press enter to run team code")
 
@@ -27,9 +27,9 @@ while(1):
 
     control_message = sat_msgs.ControlMessage()
     control_message.active = True
-    control_message.thrust.f_x =  0.2 * (ctl.sat_state.pose.x - ctl.dead_sat_state.pose.x + 0.3) - 0.0 * (ctl.sat_state.twist.v_x)
-    control_message.thrust.f_y = 0.2 * (ctl.sat_state.pose.y - ctl.dead_sat_state.pose.y) - 0.0 * (ctl.sat_state.twist.v_y)
-    control_message.thrust.tau =   - 0.2 * (ctl.sat_state.pose.theta - 3.1415/2) - 0.0 * (ctl.sat_state.twist.omega)
+    control_message.thrust.f_x =  -0.4 * (ctl.sat_state.pose.x - ctl.dead_sat_state.pose.x + 0.5) - 0.0 * (ctl.sat_state.twist.v_x)
+    control_message.thrust.f_y = -0.4 * (ctl.sat_state.pose.y - ctl.dead_sat_state.pose.y + 0.0) - 0.0 * (ctl.sat_state.twist.v_y)
+    control_message.thrust.tau =   - 0.3 * (ctl.sat_state.pose.theta - 3.1415/2) - 0.0 * (ctl.sat_state.twist.omega)
     # control_message.thrust.f_x = 0
     # control_message.thrust.f_y = 0
     control_message.time_step = 0.1
