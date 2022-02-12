@@ -16,11 +16,19 @@ parser.add_argument(
     action='store_const', dest='loglevel', const=logging.DEBUG,
     default = logging.INFO
 )
+
+# Verbase mode!
+parser.add_argument(
+    '--challenge', action="store", type=int, default=1
+)
+
 # Parse args
 args = parser.parse_args()
 
+print(args.challenge)
+
 # Create simulator object
-sim = Sim(args.loglevel)
+sim = Sim(args.loglevel, args.challenge)
 
 class SimFrame(wx.Frame):
     def __init__(self):

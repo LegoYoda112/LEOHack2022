@@ -58,6 +58,10 @@ while True:
                 y = float(values[2])
                 theta = -float(values[3])
                 
+                k.m.servo1.moveTo(float(values[4]))
+                k.m.servo2.moveTo(float(values[5]))
+                k.m.servo3.moveTo(float(values[6]))
+                
                 # print("%0.3f %0.3f %0.3f" % (x, y, theta))
                 
                 x_vel = x

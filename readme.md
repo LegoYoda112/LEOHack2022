@@ -22,9 +22,19 @@ For competition participents; you will not need to worry about most of the files
 
 ## Getting set up
 
-A Python 3 installation is required. A set of packages are also required and can be installed by running 
-```pip install -r requirements.txt``` 
-in the root folder. If you prefer to use a different package manager, a list of required packages is as follows: `zmq protobuf coloredlogs numpy meshcat argparse`.
+A Python 3 installation is required, it is suggested that you use a virtual environment to run out of. 
+Python 3.8 is required, if you do not have this installed, install from: https://www.python.org/downloads/release/python-386/
+
+Next we will install a virtual environment and required packages. Pipenv will handle this for us. Don't forget to run these commands in the LEOHack folder.
+``` 
+pip install pipenv
+pipenv install
+
+```
+If you prefer to use a different package manager, a list of required packages is as follows: `protobuf coloredlogs numpy meshcat argparse wxpython`.
+
+To check if everything works, spin up the simulator using `pipenv run python ./software/simulator/sim_gui.py` from the root LEOHack folder.
+
 
 ## Writing your first sat controller
 

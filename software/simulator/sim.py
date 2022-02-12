@@ -4,7 +4,10 @@ import os
 
 print(os.getcwd())
 
-sys.path.append("../sat_control/")
+sys.path.append("../../team/")
+sys.path.append("./team")
+sys.path.append("./software/sat_control")
+sys.path.append("../sat_control")
 import team_controller
 from sat_controller import sat_msgs
 
@@ -84,9 +87,9 @@ class Sim():
         self.vis.open()
 
         # Add satellites
-        self.vis["dead_sat"].set_object(g.ObjMeshGeometry.from_file("3d_assets/Base.obj"), g.MeshPhongMaterial(color = 0xDD6442, transparent = False, opacity=1))
+        self.vis["dead_sat"].set_object(g.ObjMeshGeometry.from_file("software/simulator/3d_assets/Base.obj"), g.MeshPhongMaterial(color = 0xDD6442, transparent = False, opacity=1))
         self.logger.debug("Added dead sat")
-        self.vis["team_sat"].set_object(g.ObjMeshGeometry.from_file("3d_assets/Base.obj"), g.MeshPhongMaterial(color = 0x73BE63, transparent = False, opacity=1))
+        self.vis["team_sat"].set_object(g.ObjMeshGeometry.from_file("software/simulator/3d_assets/Base.obj"), g.MeshPhongMaterial(color = 0x73BE63, transparent = False, opacity=1))
         self.logger.debug("Added team sat")
 
         self.logger.info("Meshcat started")
