@@ -14,6 +14,7 @@ class TeamController(SatControllerInterface):
     def team_init(self):
         """ Runs any team based initialization """
         # Run any initialization you need
+        self.set_mass(44.7)
 
         # Example of persistant data
         self.counter = 0
@@ -37,6 +38,7 @@ class TeamController(SatControllerInterface):
         print(dead_sat_state)
         print(satellite_state)
         print(satellite_state.fuel)
+        print(f'Mass: {self.sat_description.mass}')
 
         # Get timedelta from elapsed time
         elapsed_time = system_state.elapsedTime.ToTimedelta()
@@ -51,10 +53,16 @@ class TeamController(SatControllerInterface):
         # Create a thrust command message
         control_message = sat_msgs.ControlMessage()
 
+        # Defining target position, damping, k
+        x_target = dead_sat_state.pose.x + 0.25 * math.cos(dead_sat_state.pose.theta - math.pi / 2)
+        y_target = dead_sat_state.pose.y + 0.25 * math.sin(dead_sat_state.pose.theta - math.pi / 2)
+        k = 10
+        crit_damp = 2 * math.sqrt(self.sat_description.mass * k)
+
         # Set thrust command values, basic PD controller that drives the sat to [0, -1]
-        control_message.thrust.f_x = -2.0 * (satellite_state.pose.x - (1.2)) - 3.0 * satellite_state.twist.v_x
-        control_message.thrust.f_y = -2.0 * (satellite_state.pose.y - (-2)) - 3.0 * satellite_state.twist.v_y
-        control_message.thrust.tau = -2.0 * (satellite_state.pose.theta - (dead_sat_state.pose.theta) - (math.pi/3)) - 3.0 * satellite_state.twist.omega
+        control_message.thrust.f_x = -k * (satellite_state.pose.x - (x_target)) - crit_damp * satellite_state.twist.v_x
+        control_message.thrust.f_y = -k * (satellite_state.pose.y - (y_target)) - crit_damp * satellite_state.twist.v_y
+        control_message.thrust.tau = -k * (satellite_state.pose.theta - (dead_sat_state.pose.theta) - (math.pi/3)) - crit_damp * satellite_state.twist.omega
 
         # Return control message
         return control_message
