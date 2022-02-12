@@ -49,15 +49,17 @@ message Wrench2D {
 ### Control message: 
 ``` protobuf
 message ControlMessage {
+    // Wether or not to apply sent thrust commands
+    bool active = 1;
 
-    // Satellite location
-    Pose2D pose
+    // Thrust command
+    Wrench2D thrust = 2;
 
-    // Satellite velocity
-    Twist2D twist
-
-    // Used fuel (tracks impulse over time)
-    float fuel
+    // Absolute pose read by the camera system
+    Pose2D absolute_pose = 3;
+    
+    // Servo states (for physical robot)
+    ServoStates servo_states = 4;
 }
 ```
 

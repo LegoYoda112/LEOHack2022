@@ -9,7 +9,7 @@ A python 3.8 install is required, if you do not have this installed, install fro
 
 A video version of the next few steps is here: https://youtu.be/1hygeTHZObU If you run into any issues, message the help channel on teams and @ Thomas.
 
-Clone the repo onto your local machine and open it up in your coding editor of choice, [VS Code](https://code.visualstudio.com/) is always a fan favorite.
+Clone the repo onto your local machine ([GitHub Desktop](https://desktop.github.com/) is recommended) and open it up in your coding editor of choice, [VS Code](https://code.visualstudio.com/) is always a fan favorite.
 
 Next we will install a virtual environment and required packages. Pipenv will handle this for us. Don't forget to run these commands in the LEOHack folder.
 ``` 
