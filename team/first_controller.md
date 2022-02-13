@@ -73,7 +73,6 @@ control_message = sat_msgs.ControlMessage()
 
 control_message.thrust.f_x = -2.0 * (satellite_state.pose.x - 1) - 3.0 * satellite_state.twist.v_x
 control_message.thrust.f_y = -2.0 * (satellite_state.pose.y - 1) - 3.0 * satellite_state.twist.v_y
-
 return control_message
 ```
 

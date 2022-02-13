@@ -218,10 +218,8 @@ class Sim():
             docked = False
 
         # Check angular tolerance
-        if(theta_error < theta_tolerance):
-            self.logger.info("Passing angular tolerance!")
-        else:
-            docked = False
+        
+        
 
         # Draw target
         if(self.draw_targets):
@@ -263,14 +261,32 @@ class Sim():
             # LEVEL 2 = Translating sat
             self.dead_sat_state.twist.omega = 0.2
 
+<<<<<<< Updated upstream
             self.dead_sat_state.pose.x = 0.2
             self.dead_sat_state.pose.y = -2.0
             self.dead_sat_state.pose.theta = -0.3 + t * self.dead_sat_state.twist.omega
+=======
+            self.dead_sat_state.pose.x = 4
+            self.dead_sat_state.pose.y = -4.0
+            self.dead_sat_state.pose.theta = -0.8 + t * self.dead_sat_state.twist.omega
+>>>>>>> Stashed changes
         elif(self.challenge_level == 4):
             # LEVEL 3 Translating and rotating sat
             self.dead_sat_state.twist.v_x = 0.02
             self.dead_sat_state.twist.v_y = -0.01
+<<<<<<< Updated upstream
             self.dead_sat_state.twist.omega = 0.05
+=======
+            self.dead_sat_state.twist.omega = -0.08
+
+            self.dead_sat_state.pose.x = 5 + t * self.dead_sat_state.twist.v_x
+            self.dead_sat_state.pose.y = -1 + t * self.dead_sat_state.twist.v_y
+            self.dead_sat_state.pose.theta = 1.57 + t * self.dead_sat_state.twist.omega
+
+            #self.dead_sat_state.pose.x = 0.5 + t * self.dead_sat_state.twist.v_x
+            #self.dead_sat_state.pose.y = -0.2 + t * self.dead_sat_state.twist.v_y
+            #self.dead_sat_state.pose.theta = -0.4 + t * self.dead_sat_state.twist.omega
+>>>>>>> Stashed changes
 
             self.dead_sat_state.pose.x = 0.5 + t * self.dead_sat_state.twist.v_x
             self.dead_sat_state.pose.y = -0.2 + t * self.dead_sat_state.twist.v_y
