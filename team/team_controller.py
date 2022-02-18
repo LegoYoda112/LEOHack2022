@@ -51,6 +51,8 @@ class TeamController(SatControllerInterface):
         control_message.thrust.f_x = -2.0 * (satellite_state.pose.x - (0)) - 3.0 * satellite_state.twist.v_x
         control_message.thrust.f_y = -2.0 * (satellite_state.pose.y - (-1)) - 3.0 * satellite_state.twist.v_y
 
+        control_message.servo_states.servo1 = 0.5
+
         # Return control message
         return control_message
 

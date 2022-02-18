@@ -156,7 +156,7 @@ class SatComms:
         self.global_sat_vel.v_y = thrust.f_y
         self.global_sat_vel.omega = thrust.tau
 
-        self.cmd_vel_and_servo(self.global_sat_vel, servo_states)
+        self.cmd_vel_and_servo(self.global_sat_vel, servo_states, vel_active = False)
 
         # Make sat state message
         sat_state = sat_msgs.SatelliteState()
@@ -166,11 +166,14 @@ class SatComms:
         # Return
         return sat_state.SerializeToString()
 
-    def cmd_vel_and_servo(self, cmd_vel, servo_states):
+    def cmd_vel_and_servo(self, cmd_vel, servo_states, vel_active = True):
         """ Writes desired velocity and servo states """
         self.logger.debug("Writing vel and servo")
-        
-        send_string = "ctl %.3f %.3f %.3f" % (cmd_vel.v_x, cmd_vel.v_y, cmd_vel.omega)
+
+        if vel_active:
+            send_string = "ctl %.3f %.3f %.3f" % (cmd_vel.v_x, cmd_vel.v_y, cmd_vel.omega)
+        else:
+            send_string = "ctl 0 0 0"
         send_string += " %.2f %.2f %.2f\n" % (servo_states.servo1, servo_states.servo2, servo_states.servo3)
         # send_string += " 0 0 0 \n"
 
